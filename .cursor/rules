@@ -48,4 +48,26 @@ ScrollNet is a gamified video feedback and evaluation platform that integrates A
 - Use feature branches for new functionality
 - Write descriptive commit messages
 - Include issue references in commits
-- Review code before merging to main branch 
+- Review code before merging to main branch
+
+## Documentation & Clarity Maintenance
+- **UPDATE ALL DOCUMENTATION** at every development step
+- Maintain PROJECT_PLAN.md with current phase status and progress
+- Update README.md immediately when adding new features or setup requirements
+- Keep .cursor/docs.md current with any architecture changes
+- Document all API changes and new endpoints in real-time
+- Update technical specifications when making architectural decisions
+- Ensure all team members can understand current project status from documentation alone
+- Create clear, descriptive commit messages that explain the "why" not just the "what"
+- Update phase completion status in PROJECT_PLAN.md as work progresses
+
+## Phase-Based Development Requirements
+- **STRICTLY FOLLOW** the defined phase structure in PROJECT_PLAN.md
+- No feature should be implemented outside of its designated phase
+- Each phase must be fully completed and documented before moving to the next
+- **MVP (Phase 1) RESTRICTIONS**: Focus ONLY on core functionality - NO AI integrations
+- Document phase completion criteria and ensure all criteria are met
+- Update PROJECT_PLAN.md phase status with each significant change
+- Phase 1 (MVP) must include: user auth, video feed from DB, reactions, feedback every 5 videos
+- Admin panels and tester panels are NOT part of MVP - reserved for Phase 5
+- AI integrations (Inworld, Mistral) are NOT part of MVP - reserved for Phase 3+ 

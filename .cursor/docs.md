@@ -1,142 +1,259 @@
-# ScrollNet - Gamified Video Feedback and Evaluation Platform
+# ScrollNet Technical Documentation
 
-## Table of Contents
-1. [Project Overview](#project-overview)
-2. [Architecture](#architecture)
-3. [Setup Instructions](#setup-instructions)
-4. [API Integration](#api-integration)
-5. [Core Components](#core-components)
-6. [Development Workflow](#development-workflow)
-7. [Troubleshooting](#troubleshooting)
+## Project Status: Phase 1 (MVP) Planning
+**Current Focus**: Core functionality development without AI integrations
 
-## Project Overview
+## Architecture Overview
 
-ScrollNet is a cutting-edge platform that combines gaming and AI technologies to create an interactive feedback and reinforcement learning engine. The platform serves as an evaluation engine with human-in-the-loop interactions for vision AI, enabling real-time content optimization and user engagement.
-
-### Key Features
-- **Feedback and Evaluation Engine**: Collects detailed user feedback on video content
-- **Reinforcement Learning**: Adapts content delivery based on user engagement
-- **Gamified Engagement**: AI-driven challenges, rewards, and quests
-- **Vision AI Integration**: Human-in-the-loop processes for AI model refinement
-
-## Architecture
+### Phase-Based Development Architecture
 
 ```
-ScrollNet/
-├── src/
-│   ├── index.js          # Main application entry point
-│   ├── inworld.js        # Inworld AI client and functions
-│   ├── mistral.js        # Mistral AI integration
-│   ├── challenges.js     # Challenge generation logic
-│   ├── RLengine.js       # Reinforcement learning engine
-│   ├── userFeedback.js   # User feedback processing
-│   └── visionAI.js       # Vision AI evaluation logic
-├── tests/                # Test files
-├── .cursor/              # Cursor IDE configuration
-├── .env                  # Environment variables
-└── package.json          # Node.js dependencies
+ScrollNet Platform
+├── Phase 1: MVP (CURRENT)
+│   ├── User Authentication System
+│   ├── Video Feed System (Database-driven)
+│   ├── Basic Video Player
+│   ├── Simple Reaction System
+│   └── Feedback Collection (every 5 videos)
+├── Phase 2: Enhanced UX & Analytics
+├── Phase 3: AI Integration (Inworld + Mistral)
+├── Phase 4: Advanced RL & Gamification
+├── Phase 5: Admin & Tester Panels
+└── Phase 6: Production & Scaling
 ```
 
-## Setup Instructions
+## MVP (Phase 1) Technical Specifications
+
+### Core Components
+1. **Authentication Service** (`/auth`)
+   - JWT-based authentication
+   - User registration and login
+   - Session management
+
+2. **Video Service** (`/videos`)
+   - Database-driven video feed
+   - Sequential video delivery
+   - Video metadata management
+
+3. **Interaction Service** (`/interactions`)
+   - Simple reaction tracking (like/dislike)
+   - View duration tracking
+   - Engagement metrics
+
+4. **Feedback Service** (`/feedback`)
+   - Feedback form trigger (every 5 videos)
+   - Feedback data collection and storage
+   - Basic feedback analytics
+
+### Database Schema (MVP)
+```sql
+-- Users table
+CREATE TABLE users (
+    id UUID PRIMARY KEY,
+    username VARCHAR(50) UNIQUE NOT NULL,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Videos table
+CREATE TABLE videos (
+    id UUID PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    description TEXT,
+    url VARCHAR(500) NOT NULL,
+    duration INTEGER, -- in seconds
+    tags TEXT[],
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- User interactions table
+CREATE TABLE user_interactions (
+    id UUID PRIMARY KEY,
+    user_id UUID REFERENCES users(id),
+    video_id UUID REFERENCES videos(id),
+    reaction VARCHAR(20), -- 'like', 'dislike', 'neutral'
+    watch_duration INTEGER, -- in seconds
+    completed BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Feedback table
+CREATE TABLE feedback (
+    id UUID PRIMARY KEY,
+    user_id UUID REFERENCES users(id),
+    video_id UUID REFERENCES videos(id),
+    feedback_text TEXT,
+    rating INTEGER, -- 1-5 scale
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+### API Endpoints (MVP)
+
+#### Authentication
+- `POST /auth/register` - User registration
+- `POST /auth/login` - User login
+- `POST /auth/logout` - User logout
+- `GET /auth/me` - Get current user profile
+
+#### Videos
+- `GET /videos/feed` - Get video feed for user
+- `GET /videos/:id` - Get specific video details
+- `POST /videos/:id/view` - Track video view
+
+#### Interactions
+- `POST /interactions/:videoId/react` - Submit reaction
+- `GET /interactions/stats` - Get user interaction stats
+
+#### Feedback
+- `POST /feedback` - Submit feedback
+- `GET /feedback/required` - Check if feedback required
+
+## Future Phases Architecture
+
+### Phase 3: AI Integration Components
+**Note: NOT part of MVP - for reference only**
+
+#### Inworld AI Integration
+- **Applicable Features**:
+  - Character-based guidance for video evaluation
+  - Natural language feedback collection
+  - Dynamic challenge explanations
+  - Personalized coaching based on performance
+
+- **Implementation Strategy**:
+  - Single AI guide character
+  - Text-based interactions (no voice/3D avatars)
+  - Context-aware responses based on user progress
+  - Integration with feedback collection system
+
+#### Mistral AI Integration
+- **Applicable Features**:
+  - Personalized content recommendations
+  - User preference analysis
+  - Challenge generation based on history
+  - Content optimization suggestions
+
+### Phase 5: Admin & Tester Panels
+**Note: NOT part of MVP**
+
+#### Admin Panel Features
+- User management and analytics
+- Content moderation tools
+- System configuration
+- Performance monitoring
+
+#### Tester Panel Features
+- Video upload interface
+- Test configuration
+- Results analysis
+- Content management
+
+## Development Setup (MVP)
 
 ### Prerequisites
-- Node.js (v16 or higher)
-- npm or yarn package manager
-- Cursor IDE
-- Inworld Studio account
-- Mistral API access
+- Node.js 18+
+- PostgreSQL 14+
+- Redis (for session management)
 
-### Installation Steps
-1. Clone or create the project directory
-2. Run `npm init -y` to initialize Node.js project
-3. Install dependencies: `npm install @inworld/nodejs-sdk`
-4. Copy `.env.example` to `.env` and configure API keys
-5. Run `npm start` to launch the application
+### Installation
+```bash
+# Install dependencies
+npm install
 
-## API Integration
+# Additional MVP dependencies
+npm install jsonwebtoken bcryptjs pg redis
 
-### Inworld AI Setup
-- Sign up at [Inworld Studio](https://studio.inworld.ai/)
-- Create a new scene and obtain API key and scene ID
-- Configure in `.env` file:
-  ```
-  INWORLD_API_KEY=your_api_key_here
-  INWORLD_SCENE_ID=your_scene_id_here
-  ```
+# Setup environment variables
+cp .env.example .env
+# Edit .env with database and JWT secret
+```
 
-### Mistral Integration
-- Obtain Mistral API credentials from hackathon documentation
-- Configure in `.env` file:
-  ```
-  MISTRAL_API_KEY=your_mistral_key_here
-  ```
+### MVP Environment Variables
+```
+# Database
+DATABASE_URL=postgresql://user:password@localhost:5432/scrollnet
 
-## Core Components
+# Authentication
+JWT_SECRET=your-secret-key
+JWT_EXPIRES_IN=7d
 
-### 1. Inworld Client (`inworld.js`)
-Handles communication with AI characters for gamified interactions.
+# Redis
+REDIS_URL=redis://localhost:6379
 
-### 2. Mistral Integration (`mistral.js`)
-Generates dynamic challenges and content based on user behavior.
+# Server
+PORT=3000
+NODE_ENV=development
+```
 
-### 3. Reinforcement Learning Engine (`RLengine.js`)
-Implements learning algorithms to optimize content delivery.
+### Running the MVP
+```bash
+# Start development server
+npm run dev
 
-### 4. User Feedback System (`userFeedback.js`)
-Processes and analyzes user interactions and feedback.
+# Run database migrations
+npm run migrate
 
-### 5. Vision AI Integration (`visionAI.js`)
-Manages human-in-the-loop processes for AI model improvement.
+# Seed sample data
+npm run seed
+```
 
-## Development Workflow
+## Current File Structure
+```
+scrollnet/
+├── src/
+│   ├── index.js              # Main server (MVP focus)
+│   ├── auth/                 # Authentication module
+│   ├── videos/               # Video management
+│   ├── interactions/         # User interactions
+│   ├── feedback/             # Feedback system
+│   └── database/             # Database configuration
+├── migrations/               # Database migrations
+├── tests/                    # Test files
+├── docs/                     # Documentation
+└── PROJECT_PLAN.md          # Phase planning
+```
 
-1. **Feature Development**
-   - Create feature branch from main
-   - Implement functionality with tests
-   - Update documentation
-   - Submit pull request
+## AI Integration Status
+**Current Status**: Prepared for Phase 3 implementation
+- Inworld AI integration code exists but is NOT active in MVP
+- Mistral AI integration prepared but NOT used in MVP
+- Vision AI components prepared for Phase 4
+- All AI features disabled in MVP configuration
 
-2. **Testing Strategy**
-   - Unit tests for individual components
-   - Integration tests for AI workflows
-   - Mock external API calls in tests
-   - Test error handling scenarios
-
-3. **Deployment Process**
-   - Review code changes
-   - Run full test suite
-   - Update version in package.json
-   - Deploy to staging environment
-   - Validate functionality
-   - Deploy to production
-
-## Troubleshooting
+## Troubleshooting (MVP)
 
 ### Common Issues
+1. **Database Connection**: Ensure PostgreSQL is running and credentials are correct
+2. **Authentication**: Check JWT secret is properly configured
+3. **Video Playback**: Verify video URLs are accessible
+4. **Feedback Collection**: Ensure feedback triggers correctly every 5 videos
 
-1. **API Connection Errors**
-   - Verify API keys in .env file
-   - Check network connectivity
-   - Validate API endpoint URLs
+### Performance Considerations
+- Use database indexing for video queries
+- Implement pagination for video feeds
+- Cache frequently accessed video metadata
+- Optimize database queries for user interactions
 
-2. **Rate Limiting**
-   - Implement exponential backoff
-   - Add request queuing
-   - Monitor API usage limits
+## Security Considerations (MVP)
+- JWT token validation on all protected routes
+- Input validation for all user-submitted data
+- SQL injection prevention with parameterized queries
+- Rate limiting on API endpoints
+- HTTPS enforcement in production
 
-3. **Performance Issues**
-   - Profile code execution
-   - Optimize database queries
-   - Implement caching strategies
+## Testing Strategy (MVP)
+- Unit tests for all authentication functions
+- Integration tests for video feed functionality
+- User interaction flow testing
+- Feedback collection system testing
+- Database transaction testing
 
-### Debug Tools
-- Use Node.js debugger for step-through debugging
-- Enable verbose logging in development
-- Monitor API response times and errors
-- Use profiling tools for performance analysis
-
-## External Resources
-- [Inworld Studio Documentation](https://studio.inworld.ai/)
-- [Inworld Unreal Engine Framework](https://docs.inworld.ai/)
-- [Node.js Official Documentation](https://nodejs.org/docs/)
-- [Mistral AI Documentation](https://docs.mistral.ai/) 
+## Deployment (MVP)
+- Containerized deployment with Docker
+- Environment-specific configuration
+- Database migration scripts
+- Health check endpoints
+- Logging and monitoring setup 

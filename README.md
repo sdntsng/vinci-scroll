@@ -1,260 +1,213 @@
-# ScrollNet - Gamified Video Feedback and Evaluation Platform
+# ScrollNet - Gamified Video Feedback Platform
 
-ScrollNet is a cutting-edge platform that revolutionizes how video content is tested, optimized, and evaluated by integrating AI and gamification technologies. The platform captures granular engagement data and employs AI to generate insights and optimize content delivery through reinforcement learning.
+## 🚀 Project Status: Phase 1 (MVP) Development
+**Current Focus**: Core video feed functionality with user authentication and feedback collection
 
-## 🎯 Overview
+## 📋 Project Overview
 
-ScrollNet functions as:
-- **Feedback and Reinforcement Learning Engine**: Adapts and optimizes content delivery based on user engagement
-- **Evaluation Engine**: Human-in-the-loop interactions for vision AI refinement  
-- **Gamified Experience**: AI-driven challenges, rewards, and quests to incentivize user engagement
+ScrollNet is a gamified video feedback and evaluation platform being developed in phases. The MVP focuses on establishing core functionality for user engagement with video content and feedback collection.
 
-## 🚀 Key Features
+### MVP Features (Phase 1)
+- ✅ User authentication system (login/register)
+- ✅ Database-driven video feed
+- ✅ Simple video player with reactions
+- ✅ Feedback collection system (every 5 videos)
+- ✅ Basic user engagement tracking
 
-- **AI-Powered Challenges**: Dynamic challenge generation using Mistral AI
-- **Interactive Characters**: Gamified experience with Inworld AI characters
-- **Vision AI Integration**: Human feedback improves AI model performance
-- **Reinforcement Learning**: Adaptive content recommendations
-- **Real-time Analytics**: Comprehensive feedback processing and insights
-- **Progressive Difficulty**: Challenge complexity adapts to user skill level
+### Future Phases
+- **Phase 2**: Enhanced UX & Analytics
+- **Phase 3**: AI Integration (Inworld & Mistral)
+- **Phase 4**: Advanced Gamification & RL Engine
+- **Phase 5**: Admin & Tester Panels
+- **Phase 6**: Production & Scaling
 
-## 🏗️ Architecture
+## 🏗️ MVP Architecture
 
 ```
-ScrollNet/
-├── .cursor/              # Cursor IDE configuration
-│   ├── rules            # Development rules and standards
-│   └── docs.md          # Comprehensive documentation
-├── src/                 # Source code
-│   ├── index.js         # Main application entry point
-│   ├── inworld.js       # Inworld AI client integration
-│   ├── mistral.js       # Mistral AI integration
-│   ├── challenges.js    # Challenge generation logic
-│   ├── RLengine.js      # Reinforcement learning engine
-│   ├── userFeedback.js  # User feedback processing
-│   └── visionAI.js      # Vision AI evaluation logic
-├── package.json         # Node.js dependencies
-└── README.md           # This file
+ScrollNet MVP/
+├── Authentication Service     # User registration/login
+├── Video Feed Service        # Database-driven video delivery
+├── Interaction Service       # Reactions and engagement tracking
+└── Feedback Service          # Feedback collection every 5 videos
 ```
 
-## 🛠️ Setup Instructions
+## 🛠️ MVP Setup Instructions
 
 ### Prerequisites
+- Node.js 18+
+- PostgreSQL 14+
+- Redis (for session management)
 
-- Node.js (v16 or higher)
-- npm or yarn package manager
-- Inworld Studio account
-- Mistral API access
-
-### Installation
-
-1. **Clone or navigate to the project directory**
-   ```bash
-   cd vinci-scroll
-   ```
-
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
-
-3. **Configure environment variables**
-   Create a `.env` file in the root directory:
-   ```env
-   # Server Configuration
-   PORT=3000
-   NODE_ENV=development
-
-   # Inworld AI Configuration
-   INWORLD_API_KEY=your_inworld_api_key_here
-   INWORLD_SCENE_ID=your_inworld_scene_id_here
-
-   # Mistral AI Configuration
-   MISTRAL_API_KEY=your_mistral_api_key_here
-   MISTRAL_BASE_URL=https://api.mistral.ai/v1
-   MISTRAL_MODEL=mistral-large-latest
-   ```
-
-4. **Set up Inworld AI**
-   - Sign up at [Inworld Studio](https://studio.inworld.ai/)
-   - Create a new scene and obtain your API key and scene ID
-   - Add these credentials to your `.env` file
-
-5. **Set up Mistral AI**
-   - Obtain Mistral API credentials from hackathon documentation
-   - Add your API key to the `.env` file
-
-### Running the Application
-
+### Quick Start
 ```bash
-npm start
-```
+# Clone the repository
+git clone <repository-url>
+cd vinci-scroll
 
-The server will start on `http://localhost:3000` (or the port specified in your environment).
+# Install dependencies
+npm install
 
-## 📚 API Endpoints
+# Install additional MVP dependencies
+npm install jsonwebtoken bcryptjs pg redis
 
-### Health Check
-```
-GET /api/health
-```
-Returns server status and version information.
+# Setup environment variables
+cp .env.example .env
+# Edit .env with your database credentials and JWT secret
 
-### Challenge Management
-```
-GET /api/challenge/:userId
-```
-Generate a personalized challenge for a user.
+# Run database migrations
+npm run migrate
 
-```
-POST /api/feedback
-```
-Submit user feedback for video content processing.
-
-### AI Interactions
-```
-POST /api/npc/interact
-```
-Interact with AI characters for guidance and gamification.
-
-### User Progress
-```
-GET /api/user/:userId/progress
-```
-Get user progress statistics and achievements.
-
-```
-GET /api/recommendations/:userId
-```
-Get AI-optimized content recommendations.
-
-## 🎮 Core Components
-
-### 1. Challenge Manager (`challenges.js`)
-- Generates personalized video evaluation challenges
-- Implements reward system with streak multipliers
-- Adapts difficulty based on user performance
-- Integrates with Mistral AI for dynamic content
-
-### 2. Inworld AI Client (`inworld.js`)
-- Manages AI character interactions
-- Provides challenge guidance and feedback
-- Handles fallback responses for offline scenarios
-- Supports emotional and contextual responses
-
-### 3. Mistral Integration (`mistral.js`)
-- Generates dynamic challenges based on user history
-- Creates content optimization suggestions
-- Provides personalized feedback and coaching
-- Supports both API and mock modes
-
-### 4. Reinforcement Learning Engine (`RLengine.js`)
-- Adapts content delivery based on user behavior
-- Learns user preferences and patterns
-- Generates personalized recommendations
-- Implements exploration vs exploitation strategies
-
-### 5. User Feedback Processor (`userFeedback.js`)
-- Processes and analyzes user feedback
-- Calculates quality scores and rewards
-- Tracks user progress and achievements
-- Implements sentiment analysis
-
-### 6. Vision AI Processor (`visionAI.js`)
-- Manages human-in-the-loop AI training
-- Compares human vs AI performance
-- Identifies areas for model improvement
-- Processes visual annotations and feedback
-
-## 🔧 Development
-
-### Code Style
-- ES6+ syntax with async/await
-- Comprehensive error handling
-- JSDoc documentation for all functions
-- Meaningful variable and function names
-
-### Testing
-```bash
-npm test
-```
-
-### Development Mode
-```bash
+# Start development server
 npm run dev
 ```
-Runs the server with auto-reload on file changes.
 
-### Linting
-```bash
-npm run lint
+### Environment Setup
+Create a `.env` file with:
+```env
+# Database
+DATABASE_URL=postgresql://user:password@localhost:5432/scrollnet
+
+# Authentication
+JWT_SECRET=your-secure-secret-key
+JWT_EXPIRES_IN=7d
+
+# Redis
+REDIS_URL=redis://localhost:6379
+
+# Server
+PORT=3000
+NODE_ENV=development
 ```
+
+## 📊 Database Schema (MVP)
+
+### Core Tables
+- **users**: User authentication and profile data
+- **videos**: Video metadata and content information
+- **user_interactions**: Reactions, view duration, engagement metrics
+- **feedback**: Detailed feedback collected every 5 videos
+
+## 🔌 API Endpoints (MVP)
+
+### Authentication
+- `POST /auth/register` - User registration
+- `POST /auth/login` - User login
+- `GET /auth/me` - Get current user profile
+
+### Video Feed
+- `GET /videos/feed` - Get personalized video feed
+- `GET /videos/:id` - Get specific video details
+- `POST /videos/:id/view` - Track video view
+
+### Interactions
+- `POST /interactions/:videoId/react` - Submit reaction (like/dislike)
+- `GET /interactions/stats` - Get user engagement statistics
+
+### Feedback
+- `POST /feedback` - Submit detailed feedback
+- `GET /feedback/required` - Check if feedback is required
+
+## 🧪 Testing
+
+```bash
+# Run all tests
+npm test
+
+# Run tests with coverage
+npm run test:coverage
+
+# Run specific test suites
+npm run test:auth
+npm run test:videos
+npm run test:feedback
+```
+
+## 📁 Project Structure
+
+```
+scrollnet/
+├── src/
+│   ├── auth/                 # Authentication module
+│   ├── videos/               # Video management
+│   ├── interactions/         # User interactions
+│   ├── feedback/             # Feedback system
+│   ├── database/             # Database configuration
+│   └── index.js              # Main server file
+├── migrations/               # Database migrations
+├── tests/                    # Test files
+├── docs/                     # Documentation
+├── PROJECT_PLAN.md          # Detailed phase planning
+└── package.json             # Dependencies and scripts
+```
+
+## 🔮 Future AI Integration (Phase 3+)
+
+### Planned AI Components
+- **Inworld AI**: Character-based guidance and conversational feedback
+- **Mistral AI**: Personalized content recommendations and analysis
+- **Vision AI**: Advanced video content analysis and optimization
+
+*Note: AI integrations are planned for Phase 3 and beyond. The MVP focuses on core functionality without AI dependencies.*
+
+## 🔐 Security Features
+
+- JWT-based authentication
+- Input validation and sanitization
+- SQL injection prevention
+- Rate limiting on API endpoints
+- HTTPS enforcement (production)
 
 ## 🚀 Deployment
 
-### Environment Variables
-Ensure all required environment variables are set:
-- `INWORLD_API_KEY` and `INWORLD_SCENE_ID`
-- `MISTRAL_API_KEY`
-- `PORT` (defaults to 3000)
-- `NODE_ENV` (set to 'production')
+### Development
+```bash
+npm run dev
+```
 
-### Production Build
+### Production
 ```bash
 npm run build
 npm start
 ```
 
-## 📊 Monitoring and Analytics
+## 📚 Documentation
 
-The platform includes built-in analytics for:
-- User engagement metrics
-- Challenge completion rates
-- AI model performance
-- Feedback quality scores
-- Learning progress tracking
-
-## 🔒 Security
-
-- API key management through environment variables
-- Input validation and sanitization
-- Rate limiting on API endpoints
-- Error handling without data exposure
+- [Technical Documentation](.cursor/docs.md)
+- [Development Rules](.cursor/rules)
+- [Project Plan](PROJECT_PLAN.md)
+- [API Documentation](docs/api.md) *(coming soon)*
 
 ## 🤝 Contributing
 
-1. Follow the development rules in `.cursor/rules`
-2. Maintain comprehensive documentation
-3. Include tests for new features
-4. Use meaningful commit messages
+1. Follow the phase-based development approach outlined in `PROJECT_PLAN.md`
+2. Review development rules in `.cursor/rules`
+3. Update documentation with any changes
+4. Ensure all tests pass before submitting PRs
 
-## 📖 Documentation
+## 📝 Development Status
 
-Comprehensive documentation is available in `.cursor/docs.md`, including:
-- Detailed API specifications
-- Component architecture explanations
-- Troubleshooting guides
-- Development workflows
+### Phase 1 (MVP) Progress
+- [ ] User authentication system
+- [ ] Database schema implementation
+- [ ] Video feed functionality
+- [ ] Reaction system
+- [ ] Feedback collection (every 5 videos)
+- [ ] Basic user dashboard
+- [ ] API endpoint implementation
+- [ ] Test coverage
+- [ ] Documentation completion
 
-## 🔗 External Resources
+### Current Sprint
+Focus on implementing core authentication and video feed functionality.
 
-- [Inworld Studio Documentation](https://studio.inworld.ai/)
-- [Inworld Unreal Engine Framework](https://docs.inworld.ai/)
-- [Mistral AI Documentation](https://docs.mistral.ai/)
-- [Node.js Official Documentation](https://nodejs.org/docs/)
+## 🐛 Known Issues
 
-## 📄 License
+*Issues will be tracked here as development progresses*
 
-This project is developed for educational and hackathon purposes.
+## 📞 Support
 
-## 🆘 Support
-
-For issues and questions:
-1. Check the documentation in `.cursor/docs.md`
-2. Review the troubleshooting section
-3. Examine the server logs for error details
-4. Verify environment variable configuration
+For questions or issues related to the MVP development, please refer to the technical documentation or project plan.
 
 ---
 
-**ScrollNet** - Revolutionizing video content evaluation through AI and gamification. 🎮🤖 
+**Note**: This is a phased development project. Current focus is on MVP completion before moving to advanced features and AI integration. 
