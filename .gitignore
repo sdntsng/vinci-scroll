@@ -8,7 +8,6 @@ frontend/node_modules/
 .env.development.local
 .env.test.local
 .env.production.local
-env.local
 
 # Google Cloud credentials
 gcs-service-account.json
