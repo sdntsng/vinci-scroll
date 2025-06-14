@@ -1,73 +1,267 @@
-# ScrollNet Development Rules
+# ScrollNet Development Rules & Guidelines
 
-## Project Overview
-ScrollNet is a gamified video feedback and evaluation platform that integrates AI and gaming technologies for content optimization.
+## 🚨 CRITICAL: Documentation Structure Rules
 
-## Code Style and Standards
-- Use ES6+ syntax with async/await for asynchronous operations
-- Follow camelCase for variables and functions
-- Use PascalCase for classes and constructors
-- Add comprehensive error handling with try-catch blocks
-- Include JSDoc comments for all functions and classes
-- Use meaningful variable and function names
+### **ONLY 4 CORE FILES ALLOWED**
+1. **`PROJECT_PLAN.md`** - Complete project documentation, roadmap, status, and planning
+2. **`README.md`** - User-facing documentation, getting started, and feature showcase  
+3. **`.cursor/rules`** - This file: Development rules, guidelines, and enforcement
+4. **`.cursor/docs.md`** - Technical documentation, API reference, and implementation details
 
-## File Structure Guidelines
-- Keep API integrations in separate files (inworld.js, mistral.js)
-- Separate business logic into focused modules
-- Use /src directory for all source code
-- Store configuration in .env file
-- Keep tests in /tests directory
+### **STRICT ENFORCEMENT**
+- **NO additional documentation files** are permitted
+- **NO separate status files** (STATUS.md, CURRENT_STATUS.md, etc.)
+- **NO separate analysis files** (INWORLD_INTEGRATION_ANALYSIS.md, etc.)
+- **NO separate issue tracking files** (GITHUB_ISSUES.md, etc.)
+- **ALL content MUST be consolidated** into the 4 core files above
+- **Avoid creating fix scripts;** instead, implement logical code changes that ensure a clean and methodical codebase
 
-## AI Integration Standards
-- Always handle API failures gracefully
-- Implement rate limiting for API calls
-- Use environment variables for API keys and secrets
-- Add logging for all AI model interactions
-- Implement retry logic for network requests
+### **MAINTENANCE REQUIREMENTS**
+- **`.cursor/docs.md` MUST be updated** with every code change
+- **`PROJECT_PLAN.md` MUST reflect** current project status at all times
+- **`README.md` MUST remain** user-friendly and up-to-date
+- **All documentation changes require review** before merging
 
-## Security Best Practices
-- Never commit API keys or secrets to version control
-- Use .env files for sensitive configuration
-- Validate all user inputs
-- Implement proper authentication and authorization
-- Use HTTPS for all external API calls
+### **VIOLATION CONSEQUENCES**
+- Any additional documentation files will be **immediately deleted**
+- Pull requests with extra documentation files will be **rejected**
+- Regular audits will ensure **strict compliance**
 
-## Testing Requirements
-- Write unit tests for all core functions
-- Mock external API calls in tests
-- Test error handling scenarios
-- Include integration tests for AI workflows
+---
 
-## Documentation Standards
-- Update README.md with setup instructions
-- Document all API endpoints and responses
-- Include examples for common use cases
-- Maintain changelog for version updates
+## 📋 Development Guidelines
 
-## Git Workflow
-- Use feature branches for new functionality
-- Write descriptive commit messages
-- Include issue references in commits
-- Review code before merging to main branch
+### **Code Quality Standards**
+- **TypeScript**: All new code must use TypeScript with strict mode
+- **ESLint**: Follow configured linting rules without exceptions
+- **Prettier**: Code must be formatted before commits
+- **Testing**: All new features require corresponding tests
+- **Comments**: Complex logic must include clear explanations
+- **Long-term Solutions**: Avoid creating fix scripts; instead, implement logical code changes that ensure a clean and methodical codebase
 
-## Documentation & Clarity Maintenance
-- **UPDATE ALL DOCUMENTATION** at every development step, especially .cursor/rules & .cursor/docs.md
-- Maintain PROJECT_PLAN.md with current phase status and progress
-- Update README.md immediately when adding new features or setup requirements
-- Keep .cursor/docs.md current with any architecture changes
-- Document all API changes and new endpoints in real-time
-- Update technical specifications when making architectural decisions
-- Ensure all team members can understand current project status from documentation alone
-- Create clear, descriptive commit messages that explain the "why" not just the "what"
-- Update phase completion status in PROJECT_PLAN.md as work progresses
 
-## Phase-Based Development Requirements
-- **STRICTLY FOLLOW** the defined phase structure in PROJECT_PLAN.md
-- No feature should be implemented outside of its designated phase
-- Each phase must be fully completed and documented before moving to the next
-- **MVP (Phase 1) RESTRICTIONS**: Focus ONLY on core functionality - NO AI integrations
-- Document phase completion criteria and ensure all criteria are met
-- Update PROJECT_PLAN.md phase status with each significant change
-- Phase 1 (MVP) must include: user auth, video feed from DB, reactions, feedback every 5 videos
-- Admin panels and tester panels are NOT part of MVP - reserved for Phase 5
-- AI integrations (Inworld, Mistral) are NOT part of MVP - reserved for Phase 3+ 
+### **Mobile-First Development**
+- **Touch Targets**: Minimum 44px for all interactive elements
+- **Gesture Priority**: Swipe interactions take precedence over clicks
+- **Performance**: Maintain 60fps animations on mobile devices
+- **Testing**: All features must be tested on real mobile devices
+- **Responsive**: Design for mobile first, then scale up
+
+### **Git Workflow**
+- **Branch Naming**: `feature/description`, `fix/description`, `docs/description`
+- **Commit Messages**: Use conventional commits format
+- **Pull Requests**: Must include description, testing notes, and mobile screenshots
+- **Code Review**: All changes require review before merging
+- **No Direct Commits**: Main branch is protected
+
+### **API Development**
+- **RESTful Design**: Follow REST principles for all endpoints
+- **Error Handling**: Consistent error responses with proper HTTP status codes
+- **Validation**: Input validation on all endpoints
+- **Documentation**: API changes must be documented in `.cursor/docs.md`
+- **Versioning**: Use semantic versioning for API changes
+
+### **Database Guidelines**
+- **Migrations**: All schema changes through migration scripts
+- **Indexing**: Proper indexes for performance-critical queries
+- **Relationships**: Maintain referential integrity
+- **Backup**: Regular backups for production data
+- **Security**: No sensitive data in logs or error messages
+
+---
+
+## 🔧 Technical Standards
+
+### **Frontend Architecture**
+- **Next.js 14**: Use App Router for all new pages
+- **Components**: Reusable components in `/components` directory
+- **Hooks**: Custom hooks for shared logic
+- **State Management**: Use React Context for global state
+- **Styling**: Tailwind CSS with mobile-first approach
+
+### **Backend Architecture**
+- **Express.js**: RESTful API with proper middleware
+- **Supabase**: Database operations through Supabase client
+- **Authentication**: JWT tokens with proper validation
+- **File Upload**: Google Cloud Storage for video files
+- **Logging**: Structured logging with Winston
+
+### **Security Requirements**
+- **Authentication**: All protected routes require valid JWT
+- **Input Validation**: Sanitize all user inputs
+- **CORS**: Proper CORS configuration
+- **Rate Limiting**: Implement rate limiting on API endpoints
+- **Environment Variables**: No secrets in code
+
+### **Performance Standards**
+- **Load Time**: <2 seconds first contentful paint
+- **Bundle Size**: Monitor and optimize bundle sizes
+- **Database Queries**: Optimize for minimal query count
+- **Caching**: Implement appropriate caching strategies
+- **Mobile Performance**: Optimize for mobile devices
+
+---
+
+## 🎯 Phase-Specific Rules
+
+### **Phase 1 (MVP) - COMPLETED**
+- ✅ Focus on core functionality only
+- ✅ No AI features until Phase 3
+- ✅ Mobile-first swipe interface
+- ✅ Basic authentication and video management
+
+### **Phase 2 (Enhanced UX) - CURRENT**
+- 🔄 Enhanced video player features
+- 🔄 Analytics dashboard implementation
+- 🔄 Gamification elements
+- 🔄 A/B testing framework
+
+### **Phase 3 (AI Integration) - PLANNED**
+- 📋 Inworld AI character integration
+- 📋 Mistral AI content analysis
+- 📋 Conversational feedback system
+- 📋 AI-powered recommendations
+
+### **Future Phases**
+- All AI-related code exists but remains **DISABLED** until Phase 3
+- No premature optimization for features not in current phase
+- Maintain backward compatibility across phases
+
+---
+
+## 🚀 Deployment Rules
+
+### **Environment Management**
+- **Development**: Local development with hot reload
+- **Staging**: Mirror production environment for testing
+- **Production**: Optimized build with monitoring
+- **Environment Variables**: Proper configuration for each environment
+
+### **CI/CD Pipeline**
+- **Automated Testing**: All tests must pass before deployment
+- **Code Quality**: Linting and formatting checks
+- **Security Scanning**: Vulnerability scans on dependencies
+- **Performance Testing**: Load testing for critical paths
+- **Rollback Plan**: Always have rollback strategy
+
+### **Monitoring & Logging**
+- **Error Tracking**: Comprehensive error monitoring
+- **Performance Metrics**: Track key performance indicators
+- **User Analytics**: Privacy-compliant user behavior tracking
+- **Uptime Monitoring**: 99.9% uptime target
+- **Alert System**: Immediate alerts for critical issues
+
+---
+
+## 🧪 Testing Requirements
+
+### **Test Coverage**
+- **Unit Tests**: >80% code coverage required
+- **Integration Tests**: All API endpoints tested
+- **E2E Tests**: Critical user journeys covered
+- **Mobile Testing**: Real device testing mandatory
+- **Performance Tests**: Load testing for scalability
+
+### **Testing Standards**
+- **Jest**: Unit and integration testing framework
+- **Cypress**: End-to-end testing
+- **React Testing Library**: Component testing
+- **Supertest**: API endpoint testing
+- **Mobile Testing**: iOS Safari 14+, Android Chrome 80+
+
+---
+
+## 📱 Mobile-Specific Rules
+
+### **Touch Interface**
+- **Gesture Recognition**: >95% accuracy required
+- **Touch Response**: <100ms response time
+- **Visual Feedback**: Immediate feedback for all interactions
+- **Accessibility**: WCAG 2.1 AA compliance
+- **Screen Sizes**: Support 320px to 768px width
+
+### **Performance Optimization**
+- **Bundle Splitting**: Code splitting for optimal loading
+- **Image Optimization**: WebP format with fallbacks
+- **Video Optimization**: Adaptive bitrate streaming
+- **Memory Management**: Efficient cleanup of resources
+- **Battery Usage**: Minimize battery drain
+
+---
+
+## 🔍 Code Review Checklist
+
+### **Before Submitting PR**
+- [ ] Code follows TypeScript strict mode
+- [ ] All tests pass locally
+- [ ] Mobile testing completed
+- [ ] Documentation updated in `.cursor/docs.md`
+- [ ] No console.log statements in production code
+- [ ] Performance impact assessed
+
+### **Reviewer Checklist**
+- [ ] Code quality meets standards
+- [ ] Security considerations addressed
+- [ ] Mobile functionality verified
+- [ ] Documentation is accurate
+- [ ] No breaking changes without migration plan
+- [ ] Performance impact acceptable
+
+---
+
+## 🚨 Emergency Procedures
+
+### **Production Issues**
+1. **Immediate Response**: Acknowledge within 15 minutes
+2. **Assessment**: Determine severity and impact
+3. **Communication**: Update stakeholders on status
+4. **Resolution**: Implement fix or rollback
+5. **Post-Mortem**: Document lessons learned
+
+### **Security Incidents**
+1. **Isolation**: Isolate affected systems
+2. **Assessment**: Determine scope of breach
+3. **Notification**: Inform relevant parties
+4. **Remediation**: Fix vulnerabilities
+5. **Monitoring**: Enhanced monitoring post-incident
+
+---
+
+## 📊 Metrics & KPIs
+
+### **Development Metrics**
+- **Code Quality**: Maintainability index >70
+- **Test Coverage**: >80% for all new code
+- **Build Time**: <5 minutes for full build
+- **Deployment Frequency**: Multiple times per week
+- **Lead Time**: <2 days from commit to production
+
+### **User Experience Metrics**
+- **Load Time**: <2 seconds first contentful paint
+- **Error Rate**: <1% of user sessions
+- **User Engagement**: >90% video completion rate
+- **Feedback Quality**: >70% detailed feedback submission
+- **Mobile Performance**: 60fps animations maintained
+
+---
+
+## 🎯 Success Criteria
+
+### **Phase Completion**
+- All planned features implemented and tested
+- Performance benchmarks met
+- Security review completed
+- Documentation updated
+- User acceptance testing passed
+
+### **Quality Gates**
+- No critical bugs in production
+- Performance targets achieved
+- Security standards met
+- Accessibility compliance verified
+- Mobile experience optimized
+
+---
+
+*These rules are enforced automatically where possible and through code review for all changes.*  
+*Last Updated: June 14, 2025*

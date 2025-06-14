@@ -124,9 +124,9 @@ app.get('/api/auth/me', (req, res) => {
 
 // Video feed routes (Phase 1)
 app.get('/api/videos', async (req, res) => {
+  const { limit = 10, offset = 0, userId } = req.query;
+  
   try {
-    const { limit = 10, offset = 0, userId } = req.query;
-    
     // Get videos from Supabase
     const videos = await supabaseService.getVideoFeed(
       userId, 
@@ -414,7 +414,7 @@ app.listen(PORT, () => {
   logger.info(`📋 Phase: MVP (Phase 1) - Core functionality only`);
   logger.info(`🗄️  Database: Supabase`);
   logger.info(`☁️  Storage: Google Cloud Storage`);
-  logger.info(`�� Health check: http://localhost:${PORT}/api/health`);
+  logger.info(`�� Health check: ${process.env.SERVER_URL || `http://localhost:${PORT}`}/api/health`);
   logger.info(`📖 API Documentation: All endpoints return 501 (Not Implemented) during development`);
   logger.info(`❌ AI features disabled until Phase 3`);
 });

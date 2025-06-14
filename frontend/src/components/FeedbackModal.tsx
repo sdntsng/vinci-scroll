@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { API_URLS } from '../config/api'
 
 interface FeedbackModalProps {
   videoId: string | null
@@ -43,7 +44,7 @@ export function FeedbackModal({ videoId, onSubmit, onClose }: FeedbackModalProps
 
     try {
       // TODO: Submit to backend
-      await fetch('http://localhost:3001/api/feedback', {
+      await fetch(API_URLS.FEEDBACK, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

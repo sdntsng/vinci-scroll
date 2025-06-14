@@ -2,12 +2,9 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { Swiper, SwiperSlide } from 'swiper/react'
-import { Navigation, Pagination, EffectCards } from 'swiper/modules'
-
-// Import Swiper styles
+import { EffectCards, Keyboard } from 'swiper/modules'
+import { useAuth } from '../contexts/AuthContext'
 import 'swiper/css'
-import 'swiper/css/navigation'
-import 'swiper/css/pagination'
 import 'swiper/css/effect-cards'
 
 interface Video {
@@ -18,6 +15,8 @@ interface Video {
   duration: number
   tags: string[]
   thumbnail?: string
+  uploader?: string
+  createdAt?: string
 }
 
 interface SwipeVideoPlayerProps {
@@ -38,11 +37,12 @@ const EMOJI_REACTIONS = [
 ]
 
 export function SwipeVideoPlayer({ videos, onVideoReaction, onNextVideo }: SwipeVideoPlayerProps) {
+  const { user, signOut } = useAuth()
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0)
-  const [isPlaying, setIsPlaying] = useState(false)
-  const [showEmojiBar, setShowEmojiBar] = useState(false)
-  const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | 'up' | null>(null)
+  const [isPlaying, setIsPlaying] = useState(true)
   const [reactionFeedback, setReactionFeedback] = useState<string | null>(null)
+  const [userReactions, setUserReactions] = useState<Record<string, number>>({})
+  const [showProfile, setShowProfile] = useState(false)
   
   const swiperRef = useRef<any>(null)
   const videoRefs = useRef<Record<string, HTMLVideoElement | null>>({})
@@ -53,20 +53,11 @@ export function SwipeVideoPlayer({ videos, onVideoReaction, onNextVideo }: Swipe
     // Auto-play current video when it changes
     const currentVideoEl = videoRefs.current[currentVideo?.id]
     if (currentVideoEl && isPlaying) {
-      currentVideoEl.play()
+      currentVideoEl.play().catch(console.error)
     }
   }, [currentVideo, isPlaying])
 
-  const handleSwipeStart = () => {
-    setSwipeDirection(null)
-    setReactionFeedback(null)
-  }
-
-  const handleSwipeMove = (direction: 'left' | 'right' | 'up') => {
-    setSwipeDirection(direction)
-  }
-
-  const handleSwipeEnd = (direction: 'left' | 'right' | 'up') => {
+  const handleSwipe = (direction: 'left' | 'right' | 'up') => {
     if (!currentVideo) return
 
     switch (direction) {
@@ -74,13 +65,13 @@ export function SwipeVideoPlayer({ videos, onVideoReaction, onNextVideo }: Swipe
         // Dislike
         onVideoReaction(currentVideo.id, 'dislike')
         setReactionFeedback('👎 Disliked')
-        setTimeout(() => goToNextVideo(), 500)
+        setTimeout(() => goToNextVideo(), 300)
         break
       case 'right':
         // Like
         onVideoReaction(currentVideo.id, 'like')
         setReactionFeedback('👍 Liked')
-        setTimeout(() => goToNextVideo(), 500)
+        setTimeout(() => goToNextVideo(), 300)
         break
       case 'up':
         // Next video
@@ -88,10 +79,7 @@ export function SwipeVideoPlayer({ videos, onVideoReaction, onNextVideo }: Swipe
         break
     }
     
-    setTimeout(() => {
-      setSwipeDirection(null)
-      setReactionFeedback(null)
-    }, 1000)
+    setTimeout(() => setReactionFeedback(null), 1500)
   }
 
   const goToNextVideo = () => {
@@ -110,7 +98,7 @@ export function SwipeVideoPlayer({ videos, onVideoReaction, onNextVideo }: Swipe
     if (isPlaying) {
       videoEl.pause()
     } else {
-      videoEl.play()
+      videoEl.play().catch(console.error)
     }
     setIsPlaying(!isPlaying)
   }
@@ -120,22 +108,32 @@ export function SwipeVideoPlayer({ videos, onVideoReaction, onNextVideo }: Swipe
     
     onVideoReaction(currentVideo.id, 'emoji', { emoji: emoji.emoji, key: emoji.key, label: emoji.label })
     setReactionFeedback(`${emoji.emoji} ${emoji.label}`)
-    setShowEmojiBar(false)
+    
+    // Update local reaction count
+    setUserReactions(prev => ({
+      ...prev,
+      [emoji.key]: (prev[emoji.key] || 0) + 1
+    }))
     
     setTimeout(() => setReactionFeedback(null), 2000)
   }
 
   const handleVideoEnd = () => {
-    setIsPlaying(false)
-    setTimeout(() => goToNextVideo(), 1000)
+    setTimeout(() => goToNextVideo(), 500)
   }
 
   if (!currentVideo) {
     return (
-      <div className="flex items-center justify-center h-screen bg-gray-900 text-white">
+      <div className="flex items-center justify-center h-screen bg-black text-white">
         <div className="text-center">
-          <h2 className="text-2xl font-bold mb-4">No more videos!</h2>
-          <p className="text-gray-400">Great job watching all the content!</p>
+          <h2 className="text-2xl font-bold mb-4">🎉 All caught up!</h2>
+          <p className="text-gray-400 mb-6">You've watched all available videos</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="bg-purple-600 hover:bg-purple-700 px-6 py-3 rounded-full font-medium transition-colors"
+          >
+            Refresh Feed
+          </button>
         </div>
       </div>
     )
@@ -143,37 +141,121 @@ export function SwipeVideoPlayer({ videos, onVideoReaction, onNextVideo }: Swipe
 
   return (
     <div className="h-screen bg-black relative overflow-hidden">
+      {/* User Profile Header */}
+      <div className="absolute top-0 left-0 right-0 z-50 p-4 bg-gradient-to-b from-black/50 to-transparent">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <div 
+              className="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center cursor-pointer hover:bg-purple-700 transition-colors"
+              onClick={() => setShowProfile(!showProfile)}
+            >
+              {user?.user_metadata?.avatar_url ? (
+                <img 
+                  src={user.user_metadata.avatar_url} 
+                  alt="Profile" 
+                  className="w-full h-full rounded-full object-cover"
+                />
+              ) : (
+                <span className="text-white font-bold">
+                  {user?.email?.[0]?.toUpperCase() || '👤'}
+                </span>
+              )}
+            </div>
+            <div className="text-white">
+              <p className="font-medium text-sm">
+                {user?.user_metadata?.full_name || user?.email || 'Anonymous'}
+              </p>
+              {Object.keys(userReactions).length > 0 && (
+                <p className="text-xs text-gray-300">
+                  {Object.values(userReactions).reduce((a, b) => a + b, 0)} reactions
+                </p>
+              )}
+            </div>
+          </div>
+          
+          <div className="text-white text-sm">
+            {currentVideoIndex + 1} / {videos.length}
+          </div>
+        </div>
+
+        {/* Profile Dropdown */}
+        {showProfile && (
+          <div className="absolute top-16 left-4 bg-black/90 backdrop-blur-sm rounded-lg p-4 min-w-[200px]">
+            <div className="text-white space-y-3">
+              <div>
+                <p className="font-medium">{user?.email || 'Anonymous User'}</p>
+                <p className="text-sm text-gray-400">
+                  Total reactions: {Object.values(userReactions).reduce((a, b) => a + b, 0)}
+                </p>
+              </div>
+              
+              {Object.keys(userReactions).length > 0 && (
+                <div>
+                  <p className="text-sm font-medium mb-2">Your Reactions:</p>
+                  <div className="grid grid-cols-4 gap-2">
+                    {Object.entries(userReactions).map(([key, count]) => {
+                      const emoji = EMOJI_REACTIONS.find(r => r.key === key)
+                      return (
+                        <div key={key} className="text-center">
+                          <div className="text-lg">{emoji?.emoji}</div>
+                          <div className="text-xs text-gray-400">{count}</div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              )}
+              
+              {user && (
+                <button
+                  onClick={() => {
+                    signOut()
+                    setShowProfile(false)
+                  }}
+                  className="w-full bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-lg text-sm transition-colors"
+                >
+                  Sign Out
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Main Video Swiper */}
       <Swiper
         ref={swiperRef}
         effect="cards"
         grabCursor={true}
-        modules={[EffectCards, Navigation, Pagination]}
+        modules={[EffectCards, Keyboard]}
+        keyboard={{ enabled: true }}
         className="h-full w-full"
-        onTouchStart={() => handleSwipeStart()}
-        onTouchMove={(swiper, event) => {
+        onSlideChange={(swiper) => {
+          setCurrentVideoIndex(swiper.activeIndex)
+        }}
+        onTouchEnd={(swiper, event) => {
           const touchEvent = event as TouchEvent
-          if (touchEvent.touches && touchEvent.touches[0]) {
-            const touch = touchEvent.touches[0]
-            const { clientX, clientY } = touch
-            const { innerWidth, innerHeight } = window
+          if (touchEvent.changedTouches && touchEvent.changedTouches[0]) {
+            const touch = touchEvent.changedTouches[0]
+            const startY = (swiper as any).touchStartY || 0
+            const startX = (swiper as any).touchStartX || 0
             
-            const deltaX = clientX - innerWidth / 2
-            const deltaY = clientY - innerHeight / 2
+            const deltaY = touch.clientY - startY
+            const deltaX = touch.clientX - startX
             
-            if (Math.abs(deltaX) > Math.abs(deltaY)) {
-              handleSwipeMove(deltaX > 0 ? 'right' : 'left')
-            } else if (deltaY < -50) {
-              handleSwipeMove('up')
+            if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 50) {
+              handleSwipe(deltaX > 0 ? 'right' : 'left')
+            } else if (deltaY < -100) {
+              handleSwipe('up')
             }
           }
         }}
-        onTouchEnd={() => {
-          if (swipeDirection) {
-            handleSwipeEnd(swipeDirection)
+        onTouchStart={(swiper, event) => {
+          const touchEvent = event as TouchEvent
+          if (touchEvent.touches && touchEvent.touches[0]) {
+            (swiper as any).touchStartY = touchEvent.touches[0].clientY;
+            (swiper as any).touchStartX = touchEvent.touches[0].clientX
           }
-        }}
-        onSlideChange={(swiper) => {
-          setCurrentVideoIndex(swiper.activeIndex)
         }}
       >
         {videos.map((video, index) => (
@@ -191,165 +273,74 @@ export function SwipeVideoPlayer({ videos, onVideoReaction, onNextVideo }: Swipe
                 onEnded={handleVideoEnd}
                 onLoadedData={() => {
                   if (index === currentVideoIndex && isPlaying) {
-                    videoRefs.current[video.id]?.play()
+                    videoRefs.current[video.id]?.play().catch(console.error)
                   }
                 }}
+                onClick={togglePlay}
               />
 
-              {/* Overlay Gradient */}
-              <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/60" />
-
-              {/* Video Info */}
-              <div className="absolute bottom-20 left-4 right-4 text-white">
-                <h3 className="text-xl font-bold mb-2 drop-shadow-lg">{video.title}</h3>
-                <p className="text-sm text-gray-200 mb-3 drop-shadow-lg line-clamp-2">
-                  {video.description}
-                </p>
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {video.tags.map((tag) => (
-                    <span
-                      key={tag}
-                      className="px-2 py-1 bg-white/20 backdrop-blur-sm text-xs rounded-full"
-                    >
-                      #{tag}
-                    </span>
-                  ))}
+              {/* Video Info Overlay */}
+              <div className="absolute bottom-0 left-0 right-16 p-4 bg-gradient-to-t from-black/80 to-transparent">
+                <h3 className="text-white font-bold text-lg mb-1">{video.title}</h3>
+                {video.description && (
+                  <p className="text-gray-300 text-sm mb-2 line-clamp-2">{video.description}</p>
+                )}
+                <div className="flex items-center space-x-2 text-xs text-gray-400">
+                  <span>@{video.uploader || 'anonymous'}</span>
+                  {video.tags && video.tags.length > 0 && (
+                    <>
+                      <span>•</span>
+                      <span>#{video.tags[0]}</span>
+                    </>
+                  )}
                 </div>
               </div>
 
-              {/* Play/Pause Button */}
-              <button
-                onClick={togglePlay}
-                className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-16 h-16 bg-black/50 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-black/70 transition-all"
-              >
-                {isPlaying ? (
-                  <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
-                  </svg>
-                ) : (
-                  <svg className="w-8 h-8 ml-1" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
-                  </svg>
-                )}
-              </button>
-
-              {/* Swipe Indicators */}
-              <div className="absolute inset-0 pointer-events-none">
-                {swipeDirection === 'left' && (
-                  <div className="absolute inset-0 bg-red-500/20 flex items-center justify-center">
-                    <div className="text-6xl animate-pulse">👎</div>
+              {/* Play/Pause Indicator */}
+              {!isPlaying && (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="bg-black/50 rounded-full p-4">
+                    <div className="w-12 h-12 text-white flex items-center justify-center">
+                      ▶️
+                    </div>
                   </div>
-                )}
-                {swipeDirection === 'right' && (
-                  <div className="absolute inset-0 bg-green-500/20 flex items-center justify-center">
-                    <div className="text-6xl animate-pulse">👍</div>
-                  </div>
-                )}
-                {swipeDirection === 'up' && (
-                  <div className="absolute inset-0 bg-blue-500/20 flex items-center justify-center">
-                    <div className="text-4xl animate-bounce">⬆️ Next</div>
-                  </div>
-                )}
-              </div>
-
-              {/* Action Buttons */}
-              <div className="absolute right-4 bottom-32 flex flex-col space-y-4">
-                {/* Like Button */}
-                <button
-                  onClick={() => handleSwipeEnd('right')}
-                  className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-green-500/50 transition-all"
-                >
-                  <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M2 10.5a1.5 1.5 0 113 0v6a1.5 1.5 0 01-3 0v-6zM6 10.333v5.43a2 2 0 001.106 1.79l.05.025A4 4 0 008.943 18h5.416a2 2 0 001.962-1.608l1.2-6A2 2 0 0015.56 8H12V4a2 2 0 00-2-2 1 1 0 00-1 1v.667a4 4 0 01-.8 2.4L6.8 7.933a4 4 0 00-.8 2.4z" />
-                  </svg>
-                </button>
-
-                {/* Dislike Button */}
-                <button
-                  onClick={() => handleSwipeEnd('left')}
-                  className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-red-500/50 transition-all"
-                >
-                  <svg className="w-6 h-6 rotate-180" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M2 10.5a1.5 1.5 0 113 0v6a1.5 1.5 0 01-3 0v-6zM6 10.333v5.43a2 2 0 001.106 1.79l.05.025A4 4 0 008.943 18h5.416a2 2 0 001.962-1.608l1.2-6A2 2 0 0015.56 8H12V4a2 2 0 00-2-2 1 1 0 00-1 1v.667a4 4 0 01-.8 2.4L6.8 7.933a4 4 0 00-.8 2.4z" />
-                  </svg>
-                </button>
-
-                {/* Emoji Button */}
-                <button
-                  onClick={() => setShowEmojiBar(!showEmojiBar)}
-                  className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-yellow-500/50 transition-all"
-                >
-                  <span className="text-xl">😊</span>
-                </button>
-
-                {/* Next Button */}
-                <button
-                  onClick={() => handleSwipeEnd('up')}
-                  className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-blue-500/50 transition-all"
-                >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-                  </svg>
-                </button>
-              </div>
-
-              {/* Progress Indicator */}
-              <div className="absolute top-4 left-4 right-16">
-                <div className="flex space-x-1">
-                  {videos.map((_, index) => (
-                    <div
-                      key={index}
-                      className={`h-1 flex-1 rounded-full ${
-                        index <= currentVideoIndex ? 'bg-white' : 'bg-white/30'
-                      }`}
-                    />
-                  ))}
                 </div>
-              </div>
-
-              {/* Video Counter */}
-              <div className="absolute top-4 right-4 bg-black/50 backdrop-blur-sm rounded-full px-3 py-1 text-white text-sm">
-                {currentVideoIndex + 1}/{videos.length}
-              </div>
+              )}
             </div>
           </SwiperSlide>
         ))}
       </Swiper>
 
-      {/* Emoji Reaction Bar */}
-      {showEmojiBar && (
-        <div className="absolute bottom-32 left-4 right-20 bg-black/80 backdrop-blur-sm rounded-2xl p-4">
-          <div className="grid grid-cols-4 gap-3">
-            {EMOJI_REACTIONS.map((reaction) => (
-              <button
-                key={reaction.key}
-                onClick={() => handleEmojiReaction(reaction)}
-                className="flex flex-col items-center p-2 hover:bg-white/20 rounded-lg transition-all"
-              >
-                <span className="text-2xl mb-1">{reaction.emoji}</span>
-                <span className="text-xs text-gray-300">{reaction.label}</span>
-              </button>
-            ))}
-          </div>
+      {/* Emoji Reactions Panel */}
+      <div className="absolute right-4 top-1/2 transform -translate-y-1/2 z-40">
+        <div className="flex flex-col space-y-3">
+          {EMOJI_REACTIONS.map((reaction) => (
+            <button
+              key={reaction.key}
+              onClick={() => handleEmojiReaction(reaction)}
+              className="w-12 h-12 bg-black/50 backdrop-blur-sm rounded-full flex items-center justify-center text-2xl hover:bg-black/70 transition-all duration-200 hover:scale-110 active:scale-95"
+              title={reaction.label}
+            >
+              {reaction.emoji}
+            </button>
+          ))}
         </div>
-      )}
+      </div>
+
+      {/* Swipe Instructions */}
+      <div className="absolute bottom-20 left-1/2 transform -translate-x-1/2 z-40">
+        <div className="bg-black/50 backdrop-blur-sm rounded-full px-4 py-2">
+          <p className="text-white text-xs text-center">
+            ← Dislike • Like → • ↑ Next
+          </p>
+        </div>
+      </div>
 
       {/* Reaction Feedback */}
       {reactionFeedback && (
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-black/80 backdrop-blur-sm rounded-2xl px-6 py-3 text-white text-lg font-bold animate-bounce">
-          {reactionFeedback}
-        </div>
-      )}
-
-      {/* Swipe Instructions (shown on first video) */}
-      {currentVideoIndex === 0 && (
-        <div className="absolute bottom-4 left-4 right-4 bg-black/80 backdrop-blur-sm rounded-2xl p-4 text-white text-center">
-          <p className="text-sm mb-2 font-medium">Swipe to interact:</p>
-          <div className="flex justify-around text-xs">
-            <span>← Dislike</span>
-            <span>→ Like</span>
-            <span>↑ Next</span>
-            <span>😊 React</span>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50">
+          <div className="bg-black/80 backdrop-blur-sm rounded-full px-6 py-3 animate-pulse">
+            <p className="text-white text-lg font-medium text-center">{reactionFeedback}</p>
           </div>
         </div>
       )}

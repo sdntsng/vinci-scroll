@@ -44,8 +44,25 @@ class GoogleCloudStorageService {
 
         stream.on('finish', async () => {
           try {
-            // Make the file publicly readable
-            await fileUpload.makePublic();
+            // Always try to make the file publicly readable
+            try {
+              await fileUpload.makePublic();
+              console.log(`File ${fileName} made public successfully`);
+            } catch (error) {
+              console.warn('Could not make file public via makePublic():', error.message);
+              
+              // Try alternative method: set ACL directly
+              try {
+                await fileUpload.acl.add({
+                  entity: 'allUsers',
+                  role: 'READER'
+                });
+                console.log(`File ${fileName} made public via ACL`);
+              } catch (aclError) {
+                console.warn('Could not set public ACL:', aclError.message);
+                console.log('File may still be accessible if bucket has uniform access enabled');
+              }
+            }
             
             const publicUrl = `https://storage.googleapis.com/${this.bucketName}/${fileName}`;
             

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
+import { buildApiUrl } from '../config/api'
 
 interface Video {
   id: string
@@ -82,7 +83,7 @@ export function VideoPlayer({ video, onVideoEnd }: VideoPlayerProps) {
 
     // TODO: Send reaction to backend
     try {
-      await fetch(`http://localhost:3001/api/interactions/${video.id}/react`, {
+      await fetch(buildApiUrl(`/api/interactions/${video.id}/react`), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { buildApiUrl } from '../config/api'
 
 interface LoginFormProps {
   onLogin: (userData: any) => void
@@ -24,7 +25,7 @@ export function LoginForm({ onLogin }: LoginFormProps) {
     try {
       // TODO: Replace with actual API call
       const endpoint = isLogin ? '/api/auth/login' : '/api/auth/register'
-      const response = await fetch(`http://localhost:3001${endpoint}`, {
+      const response = await fetch(buildApiUrl(endpoint), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

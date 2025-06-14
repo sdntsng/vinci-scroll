@@ -8,6 +8,11 @@ const router = express.Router();
 const gcsService = new GoogleCloudStorageService();
 const supabaseService = new SupabaseService();
 
+// Test endpoint to verify server is running updated code
+router.get('/test', (req, res) => {
+  res.json({ message: 'Upload routes updated - v2', timestamp: new Date().toISOString() });
+});
+
 // Configure multer for file uploads
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -15,11 +20,27 @@ const upload = multer({
     fileSize: 500 * 1024 * 1024, // 500MB limit
   },
   fileFilter: (req, file, cb) => {
-    const allowedTypes = ['video/mp4', 'video/avi', 'video/mov', 'video/wmv', 'video/flv', 'video/webm', 'video/mkv', 'video/x-m4v'];
-    if (allowedTypes.includes(file.mimetype)) {
+    console.log('File upload attempt:', {
+      originalname: file.originalname,
+      mimetype: file.mimetype,
+      fieldname: file.fieldname
+    });
+    
+    const allowedTypes = [
+      'video/mp4', 'video/avi', 'video/mov', 'video/wmv', 
+      'video/flv', 'video/webm', 'video/mkv', 'video/x-m4v',
+      'video/quicktime', 'application/octet-stream' // Sometimes MP4 files are detected as octet-stream
+    ];
+    
+    // Also check file extension as fallback
+    const fileExtension = file.originalname.toLowerCase().split('.').pop();
+    const allowedExtensions = ['mp4', 'avi', 'mov', 'wmv', 'flv', 'webm', 'mkv', 'm4v'];
+    
+    if (allowedTypes.includes(file.mimetype) || allowedExtensions.includes(fileExtension)) {
       cb(null, true);
     } else {
-      cb(new Error('Invalid file type. Only video files are allowed.'), false);
+      console.error('File rejected:', { mimetype: file.mimetype, extension: fileExtension });
+      cb(new Error(`Invalid file type. Detected: ${file.mimetype}, Extension: ${fileExtension}. Only video files are allowed.`), false);
     }
   },
 });
@@ -36,9 +57,9 @@ router.post('/video', upload.single('video'), async (req, res) => {
       return res.status(400).json({ error: 'No video file provided' });
     }
 
-    // For MVP, we'll use a mock user ID
+    // For MVP, we'll use a mock user ID (generate a valid UUID)
     // In production, this would come from JWT token
-    const userId = req.body.userId || 'mock-user-id';
+    const userId = req.body.userId || '00000000-0000-0000-0000-000000000001';
     
     const metadata = {
       title: req.body.title,
@@ -88,12 +109,12 @@ router.post('/batch', upload.array('videos', 100), async (req, res) => {
       return res.status(400).json({ error: 'No video files provided' });
     }
 
-    const userId = req.body.userId || 'mock-user-id';
+    const userId = req.body.userId || '00000000-0000-0000-0000-000000000001';
     const sessionName = req.body.sessionName || `Batch Upload ${new Date().toISOString()}`;
 
     // Create upload session
     const uploadSession = await supabaseService.createUploadSession(
-      userId,
+      null, // Set to null to avoid foreign key constraint for MVP
       sessionName,
       req.files.length
     );
@@ -106,7 +127,7 @@ router.post('/batch', upload.array('videos', 100), async (req, res) => {
     });
 
     // Create database records for successful uploads
-    const dbResults = await supabaseService.batchCreateVideos(uploadResults, userId);
+    const dbResults = await supabaseService.batchCreateVideos(uploadResults, null);
 
     // Update upload session
     await supabaseService.updateUploadSession(uploadSession.id, {
@@ -145,7 +166,7 @@ router.post('/batch', upload.array('videos', 100), async (req, res) => {
  */
 router.post('/directory', async (req, res) => {
   try {
-    const { directoryPath, userId = 'mock-user-id', sessionName } = req.body;
+    const { directoryPath, userId = '00000000-0000-0000-0000-000000000001', sessionName } = req.body;
 
     if (!directoryPath) {
       return res.status(400).json({ error: 'Directory path is required' });
@@ -155,7 +176,7 @@ router.post('/directory', async (req, res) => {
 
     // Create upload session
     const uploadSession = await supabaseService.createUploadSession(
-      userId,
+      null, // Set to null to avoid foreign key constraint for MVP
       sessionName || `Directory Upload: ${path.basename(directoryPath)}`,
       0 // Will be updated after counting files
     );
@@ -171,7 +192,7 @@ router.post('/directory', async (req, res) => {
     });
 
     // Create database records
-    const dbResults = await supabaseService.batchCreateVideos(uploadResults, userId);
+    const dbResults = await supabaseService.batchCreateVideos(uploadResults, null);
 
     // Final session update
     await supabaseService.updateUploadSession(uploadSession.id, {

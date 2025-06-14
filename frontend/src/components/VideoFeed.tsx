@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import { SwipeVideoPlayer } from './SwipeVideoPlayer'
+import { API_URLS, buildApiUrl } from '../config/api'
+import { useAuth } from '../contexts/AuthContext'
 
 interface Video {
   id: string
@@ -20,6 +22,7 @@ interface VideoFeedProps {
 }
 
 export function VideoFeed({ onVideoWatched }: VideoFeedProps) {
+  const { user, loading: authLoading } = useAuth()
   const [videos, setVideos] = useState<Video[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
@@ -33,7 +36,7 @@ export function VideoFeed({ onVideoWatched }: VideoFeedProps) {
       setIsLoading(true)
       setError('')
       
-      const response = await fetch('http://localhost:3001/api/videos?limit=20')
+      const response = await fetch(`${API_URLS.VIDEOS}?limit=20`)
       const data = await response.json()
       
       if (data.success) {
@@ -78,11 +81,10 @@ export function VideoFeed({ onVideoWatched }: VideoFeedProps) {
 
   const handleVideoReaction = async (videoId: string, reaction: 'like' | 'dislike' | 'emoji', data?: any) => {
     try {
-      // Get user ID from localStorage (MVP approach)
-      const userData = localStorage.getItem('user')
-      const userId = userData ? JSON.parse(userData).id : 'anonymous-user'
+      // Use authenticated user ID or anonymous
+      const userId = user?.id || 'anonymous-user'
       
-      const response = await fetch('http://localhost:3001/api/interactions', {
+      const response = await fetch(API_URLS.INTERACTIONS, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
