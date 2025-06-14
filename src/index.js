@@ -1,252 +1,226 @@
 /**
- * ScrollNet - Main Application Entry Point
- * Gamified Video Feedback and Evaluation Platform
+ * ScrollNet MVP Backend Server
+ * Phase 1: Core functionality only - NO AI integrations
  */
 
-require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const { InworldClient } = require('./inworld');
-const { MistralClient } = require('./mistral');
-const { ChallengeManager } = require('./challenges');
-const { RLEngine } = require('./RLengine');
-const { UserFeedbackProcessor } = require('./userFeedback');
-const { VisionAIProcessor } = require('./visionAI');
+const dotenv = require('dotenv');
+const winston = require('winston');
 
+// Load environment variables
+dotenv.config();
+
+// Initialize logger
+const logger = winston.createLogger({
+  level: 'info',
+  format: winston.format.combine(
+    winston.format.timestamp(),
+    winston.format.json()
+  ),
+  transports: [
+    new winston.transports.Console({
+      format: winston.format.simple()
+    })
+  ]
+});
+
+// Initialize Express app
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001; // Use 3001 to avoid conflict with Next.js
 
 // Middleware
 app.use(cors());
-app.use(express.json());
-app.use(express.static('public'));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true }));
 
-// Initialize core components
-let inworldClient;
-let mistralClient;
-let challengeManager;
-let rlEngine;
-let feedbackProcessor;
-let visionAIProcessor;
+// Request logging middleware
+app.use((req, res, next) => {
+  logger.info(`${req.method} ${req.path} - ${req.ip}`);
+  next();
+});
 
-/**
- * Initialize all AI and game components
- */
-async function initializeComponents() {
-    try {
-        console.log('🚀 Initializing ScrollNet components...');
-        
-        // Initialize AI clients
-        inworldClient = new InworldClient();
-        mistralClient = new MistralClient();
-        
-        // Initialize game systems
-        challengeManager = new ChallengeManager(mistralClient);
-        rlEngine = new RLEngine();
-        feedbackProcessor = new UserFeedbackProcessor();
-        visionAIProcessor = new VisionAIProcessor();
-        
-        console.log('✅ All components initialized successfully');
-    } catch (error) {
-        console.error('❌ Failed to initialize components:', error);
-        process.exit(1);
-    }
-}
-
-// API Routes
-
-/**
- * Health check endpoint
- */
+// Health check endpoint
 app.get('/api/health', (req, res) => {
-    res.json({
-        status: 'healthy',
-        timestamp: new Date().toISOString(),
-        version: '1.0.0'
-    });
-});
-
-/**
- * Get current user challenge
- */
-app.get('/api/challenge/:userId', async (req, res) => {
-    try {
-        const { userId } = req.params;
-        const userHistory = await feedbackProcessor.getUserHistory(userId);
-        const challenge = await challengeManager.generateChallenge(userHistory);
-        
-        res.json({
-            success: true,
-            challenge
-        });
-    } catch (error) {
-        console.error('Error generating challenge:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Failed to generate challenge'
-        });
+  res.json({
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    phase: 'MVP (Phase 1)',
+    version: '0.1.0',
+    features: {
+      auth: 'planned',
+      videoFeed: 'planned',
+      interactions: 'planned',
+      feedback: 'planned',
+      aiIntegration: 'disabled (Phase 3+)'
     }
+  });
 });
 
-/**
- * Submit user feedback for video content
- */
-app.post('/api/feedback', async (req, res) => {
-    try {
-        const feedbackData = req.body;
-        
-        // Process feedback through multiple systems
-        const processedFeedback = await feedbackProcessor.processFeedback(feedbackData);
-        
-        // Update reinforcement learning model
-        await rlEngine.updateModel(processedFeedback);
-        
-        // Process through vision AI if applicable
-        if (feedbackData.visualElements) {
-            await visionAIProcessor.processVisualFeedback(feedbackData);
-        }
-        
-        res.json({
-            success: true,
-            message: 'Feedback processed successfully',
-            reward: processedFeedback.reward
-        });
-    } catch (error) {
-        console.error('Error processing feedback:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Failed to process feedback'
-        });
+// Authentication routes (Phase 1)
+app.post('/api/auth/register', (req, res) => {
+  // TODO: Implement user registration
+  res.status(501).json({
+    error: 'Not implemented yet',
+    message: 'User registration endpoint - MVP Phase 1 development',
+    phase: 'MVP'
+  });
+});
+
+app.post('/api/auth/login', (req, res) => {
+  // TODO: Implement user login
+  res.status(501).json({
+    error: 'Not implemented yet',
+    message: 'User login endpoint - MVP Phase 1 development',
+    phase: 'MVP'
+  });
+});
+
+app.get('/api/auth/me', (req, res) => {
+  // TODO: Get current user profile
+  res.status(501).json({
+    error: 'Not implemented yet',
+    message: 'Get user profile endpoint - MVP Phase 1 development',
+    phase: 'MVP'
+  });
+});
+
+// Video feed routes (Phase 1)
+app.get('/api/videos/feed', (req, res) => {
+  // TODO: Get video feed from database
+  res.status(501).json({
+    error: 'Not implemented yet',
+    message: 'Video feed endpoint - MVP Phase 1 development',
+    phase: 'MVP',
+    mockData: [
+      {
+        id: 'video-1',
+        title: 'Sample Video 1',
+        description: 'This is a sample video for MVP development',
+        url: 'https://example.com/video1.mp4',
+        duration: 120,
+        tags: ['sample', 'mvp']
+      }
+    ]
+  });
+});
+
+app.get('/api/videos/:id', (req, res) => {
+  // TODO: Get specific video details
+  const { id } = req.params;
+  res.status(501).json({
+    error: 'Not implemented yet',
+    message: `Get video ${id} endpoint - MVP Phase 1 development`,
+    phase: 'MVP'
+  });
+});
+
+app.post('/api/videos/:id/view', (req, res) => {
+  // TODO: Track video view
+  const { id } = req.params;
+  res.status(501).json({
+    error: 'Not implemented yet',
+    message: `Track video ${id} view - MVP Phase 1 development`,
+    phase: 'MVP'
+  });
+});
+
+// User interaction routes (Phase 1)
+app.post('/api/interactions/:videoId/react', (req, res) => {
+  // TODO: Submit reaction (like/dislike)
+  const { videoId } = req.params;
+  res.status(501).json({
+    error: 'Not implemented yet',
+    message: `React to video ${videoId} - MVP Phase 1 development`,
+    phase: 'MVP'
+  });
+});
+
+app.get('/api/interactions/stats', (req, res) => {
+  // TODO: Get user interaction statistics
+  res.status(501).json({
+    error: 'Not implemented yet',
+    message: 'Get interaction stats - MVP Phase 1 development',
+    phase: 'MVP'
+  });
+});
+
+// Feedback routes (Phase 1)
+app.get('/api/feedback/required', (req, res) => {
+  // TODO: Check if feedback is required (every 5 videos)
+  res.status(501).json({
+    error: 'Not implemented yet',
+    message: 'Check feedback requirement - MVP Phase 1 development',
+    phase: 'MVP',
+    mockData: {
+      required: true,
+      videosWatched: 5,
+      targetVideo: 'video-5'
     }
+  });
 });
 
-/**
- * Get AI-generated response from Inworld character
- */
-app.post('/api/npc/interact', async (req, res) => {
-    try {
-        const { message, userId } = req.body;
-        
-        if (!message || !userId) {
-            return res.status(400).json({
-                success: false,
-                error: 'Message and userId are required'
-            });
-        }
-        
-        const response = await inworldClient.sendMessage(message, userId);
-        
-        res.json({
-            success: true,
-            response
-        });
-    } catch (error) {
-        console.error('Error interacting with NPC:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Failed to interact with NPC'
-        });
-    }
+app.post('/api/feedback', (req, res) => {
+  // TODO: Submit feedback
+  res.status(501).json({
+    error: 'Not implemented yet',
+    message: 'Submit feedback - MVP Phase 1 development',
+    phase: 'MVP'
+  });
 });
 
-/**
- * Get user progress and statistics
- */
-app.get('/api/user/:userId/progress', async (req, res) => {
-    try {
-        const { userId } = req.params;
-        
-        const progress = await feedbackProcessor.getUserProgress(userId);
-        const rlStats = await rlEngine.getUserStats(userId);
-        
-        res.json({
-            success: true,
-            progress: {
-                ...progress,
-                rlStats
-            }
-        });
-    } catch (error) {
-        console.error('Error fetching user progress:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Failed to fetch user progress'
-        });
-    }
-});
-
-/**
- * Get optimized content recommendations
- */
-app.get('/api/recommendations/:userId', async (req, res) => {
-    try {
-        const { userId } = req.params;
-        
-        const userProfile = await rlEngine.getUserProfile(userId);
-        const recommendations = await rlEngine.generateRecommendations(userProfile);
-        
-        res.json({
-            success: true,
-            recommendations
-        });
-    } catch (error) {
-        console.error('Error generating recommendations:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Failed to generate recommendations'
-        });
-    }
-});
-
-// Error handling middleware
-app.use((error, req, res, next) => {
-    console.error('Unhandled error:', error);
-    res.status(500).json({
-        success: false,
-        error: 'Internal server error'
-    });
+// Disabled AI endpoints (Phase 3+)
+app.all('/api/ai/*', (req, res) => {
+  res.status(503).json({
+    error: 'AI features disabled',
+    message: 'AI integrations are planned for Phase 3 (not MVP)',
+    phase: 'MVP',
+    availableIn: 'Phase 3+'
+  });
 });
 
 // 404 handler
 app.use('*', (req, res) => {
-    res.status(404).json({
-        success: false,
-        error: 'Endpoint not found'
-    });
-});
-
-/**
- * Start the server
- */
-async function startServer() {
-    try {
-        await initializeComponents();
-        
-        app.listen(PORT, () => {
-            console.log(`🎮 ScrollNet server running on port ${PORT}`);
-            console.log(`📊 API endpoints available at http://localhost:${PORT}/api/`);
-            console.log('🔗 Visit http://localhost:${PORT}/api/health for health check');
-        });
-    } catch (error) {
-        console.error('Failed to start server:', error);
-        process.exit(1);
+  res.status(404).json({
+    error: 'Endpoint not found',
+    message: 'This endpoint does not exist or is not implemented in MVP',
+    phase: 'MVP',
+    availableEndpoints: {
+      health: 'GET /api/health',
+      auth: 'POST /api/auth/register, POST /api/auth/login, GET /api/auth/me',
+      videos: 'GET /api/videos/feed, GET /api/videos/:id, POST /api/videos/:id/view',
+      interactions: 'POST /api/interactions/:videoId/react, GET /api/interactions/stats',
+      feedback: 'GET /api/feedback/required, POST /api/feedback'
     }
-}
-
-// Handle graceful shutdown
-process.on('SIGINT', () => {
-    console.log('📴 Shutting down ScrollNet server...');
-    process.exit(0);
+  });
 });
 
+// Error handling middleware
+app.use((error, req, res, next) => {
+  logger.error('Server error:', error);
+  res.status(500).json({
+    error: 'Internal server error',
+    message: 'Something went wrong on the server',
+    phase: 'MVP'
+  });
+});
+
+// Start server
+app.listen(PORT, () => {
+  logger.info(`🚀 ScrollNet MVP Backend running on port ${PORT}`);
+  logger.info(`📋 Phase: MVP (Phase 1) - Core functionality only`);
+  logger.info(`🔗 Health check: http://localhost:${PORT}/api/health`);
+  logger.info(`📖 API Documentation: All endpoints return 501 (Not Implemented) during development`);
+  logger.info(`❌ AI features disabled until Phase 3`);
+});
+
+// Graceful shutdown
 process.on('SIGTERM', () => {
-    console.log('📴 Shutting down ScrollNet server...');
-    process.exit(0);
+  logger.info('SIGTERM received, shutting down gracefully');
+  process.exit(0);
 });
 
-// Start the application
-if (require.main === module) {
-    startServer();
-}
-
-module.exports = app; 
+process.on('SIGINT', () => {
+  logger.info('SIGINT received, shutting down gracefully');
+  process.exit(0);
+}); 

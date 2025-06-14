@@ -1,52 +1,53 @@
 {
-  "name": "scrollnet",
-  "version": "1.0.0",
-  "description": "ScrollNet - Gamified Video Feedback and Evaluation Platform integrating gaming and AI technologies",
+  "name": "vinci-scroll",
+  "version": "0.1.0",
+  "description": "ScrollNet - Gamified Video Feedback Platform (MVP Phase Development)",
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",
-    "dev": "nodemon src/index.js",
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:backend": "nodemon src/index.js",
+    "dev:frontend": "cd frontend && npm run dev",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "lint": "eslint src/**/*.js",
-    "format": "prettier --write src/**/*.js",
-    "setup": "npm install && echo 'Please configure your .env file with API keys'"
+    "lint": "eslint src/",
+    "build": "npm run build:frontend",
+    "build:frontend": "cd frontend && npm run build",
+    "migrate": "echo \"Database migrations will be added here\"",
+    "seed": "echo \"Database seeding will be added here\""
   },
   "keywords": [
-    "ai",
-    "gaming",
     "video",
     "feedback",
-    "reinforcement-learning",
-    "inworld",
-    "mistral",
-    "vision-ai",
     "gamification",
-    "content-evaluation"
+    "ai",
+    "evaluation",
+    "mvp"
   ],
-  "author": "ScrollNet Team",
-  "license": "ISC",
-  "type": "commonjs",
-  "engines": {
-    "node": ">=16.0.0",
-    "npm": ">=8.0.0"
-  },
+  "author": "Vinci Team",
+  "license": "MIT",
   "dependencies": {
-    "@inworld/nodejs-sdk": "^1.0.0",
+    "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
-    "dotenv": "^16.3.1",
-    "express": "^4.18.2"
+    "dotenv": "^16.4.7",
+    "express": "^4.21.1",
+    "jsonwebtoken": "^9.0.2",
+    "pg": "^8.13.1",
+    "redis": "^4.7.0",
+    "winston": "^3.17.0"
   },
   "devDependencies": {
-    "nodemon": "^3.0.1",
-    "eslint": "^8.50.0",
-    "prettier": "^3.0.3"
+    "concurrently": "^9.1.0",
+    "nodemon": "^3.1.7"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/scrollnet/scrollnet.git"
+    "url": "https://github.com/sdntsng/vinci-scroll.git"
   },
   "bugs": {
-    "url": "https://github.com/scrollnet/scrollnet/issues"
+    "url": "https://github.com/sdntsng/vinci-scroll/issues"
   },
-  "homepage": "https://github.com/scrollnet/scrollnet#readme"
+  "homepage": "https://github.com/sdntsng/vinci-scroll#readme"
 }

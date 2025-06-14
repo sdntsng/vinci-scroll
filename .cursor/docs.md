@@ -1,7 +1,7 @@
 # ScrollNet Technical Documentation
 
-## Project Status: Phase 1 (MVP) Planning
-**Current Focus**: Core functionality development without AI integrations
+## Project Status: Phase 1 (MVP) Development - Mobile-First Swipe Interface
+**Current Focus**: Mobile-optimized video engagement with Tinder-like swipe interactions
 
 ## Architecture Overview
 
@@ -9,12 +9,16 @@
 
 ```
 ScrollNet Platform
-├── Phase 1: MVP (CURRENT)
+├── Phase 1: MVP (CURRENT) - Mobile-First Swipe Interface
 │   ├── User Authentication System
-│   ├── Video Feed System (Database-driven)
-│   ├── Basic Video Player
-│   ├── Simple Reaction System
-│   └── Feedback Collection (every 5 videos)
+│   ├── Swipe Video Feed (Tinder-like UX)
+│   │   ├── Swipe Right = Like
+│   │   ├── Swipe Left = Dislike  
+│   │   ├── Swipe Up = Next Video
+│   │   └── Emoji Reactions (8 different emotions)
+│   ├── Mobile Video Player with Full-Screen Experience
+│   ├── Feedback Collection (every 5 videos)
+│   └── Progress Tracking with Visual Indicators
 ├── Phase 2: Enhanced UX & Analytics
 ├── Phase 3: AI Integration (Inworld + Mistral)
 ├── Phase 4: Advanced RL & Gamification
@@ -24,92 +28,252 @@ ScrollNet Platform
 
 ## MVP (Phase 1) Technical Specifications
 
-### Core Components
-1. **Authentication Service** (`/auth`)
-   - JWT-based authentication
-   - User registration and login
-   - Session management
+### Mobile-First Swipe Interface
 
-2. **Video Service** (`/videos`)
-   - Database-driven video feed
-   - Sequential video delivery
-   - Video metadata management
+#### Core Components
+1. **SwipeVideoPlayer** (`/components/SwipeVideoPlayer.tsx`)
+   - **Tinder-like Interactions**: Card-based swipe interface
+   - **Gesture Controls**:
+     - ← Swipe Left: Dislike video
+     - → Swipe Right: Like video
+     - ↑ Swipe Up: Next video
+     - Tap: Play/Pause
+   - **Emoji Reactions**: 8 emotional responses (❤️😂😍🤔🔥👏😮💯)
+   - **Full-Screen Mobile Experience**: Optimized for portrait viewing
+   - **Visual Feedback**: Real-time swipe indicators and reaction animations
+   - **Progress Indicators**: Video counter and progress bars
 
-3. **Interaction Service** (`/interactions`)
-   - Simple reaction tracking (like/dislike)
-   - View duration tracking
-   - Engagement metrics
+2. **Authentication Service** (`/auth`)
+   - Mobile-optimized login/register forms
+   - JWT token management
+   - Local storage persistence
+   - Simulated authentication for MVP
 
-4. **Feedback Service** (`/feedback`)
-   - Feedback form trigger (every 5 videos)
-   - Feedback data collection and storage
-   - Basic feedback analytics
+3. **Video Feed System** (`/components/VideoFeed.tsx`)
+   - Database-driven video queue
+   - Automatic video progression
+   - Reaction tracking and storage
+   - Error handling with graceful fallbacks
 
-### Database Schema (MVP)
-```sql
--- Users table
-CREATE TABLE users (
-    id UUID PRIMARY KEY,
-    username VARCHAR(50) UNIQUE NOT NULL,
-    email VARCHAR(255) UNIQUE NOT NULL,
-    password_hash VARCHAR(255) NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+4. **Feedback System** (`/components/FeedbackModal.tsx`)
+   - Triggered every 5 videos
+   - Multi-category rating system
+   - Text feedback collection
+   - Mobile-optimized modal interface
 
--- Videos table
-CREATE TABLE videos (
-    id UUID PRIMARY KEY,
-    title VARCHAR(255) NOT NULL,
-    description TEXT,
-    url VARCHAR(500) NOT NULL,
-    duration INTEGER, -- in seconds
-    tags TEXT[],
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+### Technology Stack
 
--- User interactions table
-CREATE TABLE user_interactions (
-    id UUID PRIMARY KEY,
-    user_id UUID REFERENCES users(id),
-    video_id UUID REFERENCES videos(id),
-    reaction VARCHAR(20), -- 'like', 'dislike', 'neutral'
-    watch_duration INTEGER, -- in seconds
-    completed BOOLEAN DEFAULT FALSE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+#### Frontend (Mobile-First)
+- **Framework**: Next.js 14 with App Router
+- **Styling**: Tailwind CSS with mobile-first responsive design
+- **Interactions**: Swiper.js for touch-based interactions
+- **State Management**: React hooks (useState, useEffect)
+- **TypeScript**: Full type safety
 
--- Feedback table
-CREATE TABLE feedback (
-    id UUID PRIMARY KEY,
-    user_id UUID REFERENCES users(id),
-    video_id UUID REFERENCES videos(id),
-    feedback_text TEXT,
-    rating INTEGER, -- 1-5 scale
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+#### Swiper Integration
+```bash
+npm install swiper
 ```
+
+**Key Features**:
+- EffectCards module for card-stack visual
+- Touch event handling for gesture recognition
+- Smooth transitions and animations
+- Mobile gesture optimization
+
+#### Backend (MVP Simplified)
+- **Runtime**: Node.js with Express.js
+- **Port**: 3001 (backend) / 3000 (frontend)
+- **Logging**: Winston for structured logging
+- **CORS**: Enabled for frontend communication
+
+### Mobile UX Design Principles
+
+#### 1. **Touch-First Interface**
+- Primary interaction through swipe gestures
+- Large touch targets for buttons (min 44px)
+- Haptic feedback simulation through visual cues
+
+#### 2. **Full-Screen Video Experience**
+- Portrait-optimized video player
+- Overlay controls with backdrop blur
+- Gradient overlays for text readability
+
+#### 3. **Gesture-Based Navigation**
+- Intuitive swipe directions
+- Visual feedback during gestures
+- Clear instruction overlay on first use
+
+#### 4. **Emoji-Driven Engagement**
+- 8 emotional reactions available
+- Grid-based selection interface
+- Animated feedback on selection
 
 ### API Endpoints (MVP)
 
-#### Authentication
-- `POST /auth/register` - User registration
-- `POST /auth/login` - User login
-- `POST /auth/logout` - User logout
-- `GET /auth/me` - Get current user profile
+#### Video Interactions
+```
+POST /api/interactions/:videoId/react
+Body: {
+  reaction: 'like' | 'dislike' | 'emoji',
+  data?: { emoji: string, key: string, label: string },
+  timestamp: string
+}
+```
 
-#### Videos
-- `GET /videos/feed` - Get video feed for user
-- `GET /videos/:id` - Get specific video details
-- `POST /videos/:id/view` - Track video view
+#### Feedback Collection
+```
+POST /api/feedback
+Body: {
+  videoId: string,
+  rating: number,
+  categories: {
+    content_quality: number,
+    engagement: number,
+    relevance: number,
+    technical_quality: number
+  },
+  wouldRecommend: boolean,
+  comments: string,
+  improvementSuggestions: string
+}
+```
 
-#### Interactions
-- `POST /interactions/:videoId/react` - Submit reaction
-- `GET /interactions/stats` - Get user interaction stats
+### Component Architecture
 
-#### Feedback
-- `POST /feedback` - Submit feedback
-- `GET /feedback/required` - Check if feedback required
+```
+src/
+├── app/
+│   └── page.tsx                 # Main mobile app entry
+├── components/
+│   ├── SwipeVideoPlayer.tsx     # Core swipe interface
+│   ├── VideoFeed.tsx           # Video management
+│   ├── LoginForm.tsx           # Mobile auth forms
+│   ├── Header.tsx              # Minimal mobile header
+│   └── FeedbackModal.tsx       # Mobile feedback collection
+└── styles/
+    └── globals.css             # Tailwind + custom mobile styles
+```
+
+### Mobile Performance Optimizations
+
+1. **Video Loading**
+   - Preload metadata only
+   - Lazy loading for non-current videos
+   - Thumbnail fallbacks
+
+2. **Touch Responsiveness**
+   - Event delegation for smooth scrolling
+   - Debounced gesture recognition
+   - Hardware acceleration via CSS transforms
+
+3. **Memory Management**
+   - Cleanup video refs on component unmount
+   - Limited concurrent video elements
+   - Efficient state updates
+
+### Swipe Interaction Flow
+
+```mermaid
+graph TD
+    A[User Swipes] --> B{Swipe Direction}
+    B -->|Left| C[Dislike Video]
+    B -->|Right| D[Like Video]
+    B -->|Up| E[Next Video]
+    C --> F[Visual Feedback]
+    D --> F
+    E --> F
+    F --> G[Track Interaction]
+    G --> H[Progress to Next Video]
+    
+    I[Emoji Button Tap] --> J[Show Emoji Grid]
+    J --> K[User Selects Emoji]
+    K --> L[Record Emoji Reaction]
+    L --> F
+```
+
+### Development Environment
+
+#### Frontend Development
+```bash
+cd frontend
+npm run dev      # Start Next.js dev server (port 3000)
+```
+
+#### Backend Development
+```bash
+npm run dev:backend   # Start Express server (port 3001)
+```
+
+#### Full-Stack Development
+```bash
+npm run dev          # Start both frontend and backend
+```
+
+### Mobile Testing
+
+#### Recommended Testing
+1. **Chrome DevTools Mobile Emulation**
+   - iPhone SE, iPhone 12 Pro, Samsung Galaxy
+   - Portrait orientation focus
+   - Touch event simulation
+
+2. **Physical Device Testing**
+   - iOS Safari
+   - Android Chrome
+   - Touch gesture responsiveness
+
+#### Key Mobile Metrics
+- **First Contentful Paint**: < 2s
+- **Touch Response Time**: < 100ms
+- **Video Load Time**: < 3s
+- **Gesture Recognition Accuracy**: > 95%
+
+### Error Handling & Fallbacks
+
+1. **Network Issues**: Local reaction storage with sync on reconnect
+2. **Video Load Failures**: Thumbnail placeholder with retry option
+3. **Touch Detection Issues**: Button fallbacks for all gestures
+4. **API Failures**: Graceful degradation to offline mode
+
+### Security Considerations (MVP)
+
+1. **Authentication**: Simulated JWT for development
+2. **Video Sources**: HTTPS-only content URLs
+3. **User Data**: Local storage with planned server migration
+4. **CORS**: Restricted to localhost for development
+
+### Future Enhancements (Post-MVP)
+
+1. **Advanced Gestures**: Multi-finger interactions, pressure sensitivity
+2. **Video Analytics**: Watch time, replay behavior, engagement patterns
+3. **Social Features**: Share reactions, collaborative viewing
+4. **Offline Mode**: Download videos for offline viewing
+5. **AI Integration**: Personalized video recommendations based on swipe patterns
+
+---
+
+## Development Guidelines
+
+### Mobile-First Development Rules
+1. Design for mobile portrait first, then scale up
+2. Test every feature on actual mobile devices
+3. Prioritize touch interactions over click events
+4. Maintain 60fps during animations and transitions
+5. Keep bundle size minimal for mobile performance
+
+### Code Organization
+- All components must be mobile-responsive by default
+- Use TypeScript for all new components
+- Follow React hooks patterns for state management
+- Implement proper error boundaries for graceful failures
+- Document all swipe interactions with clear comments
+
+### Performance Standards
+- Page load time: < 2 seconds on 3G
+- Touch response: < 100ms
+- Video start time: < 3 seconds
+- Smooth animations: 60fps minimum
 
 ## Future Phases Architecture
 
