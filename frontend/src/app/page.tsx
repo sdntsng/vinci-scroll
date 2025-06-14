@@ -12,10 +12,12 @@ export default function Home() {
   const [showFeedback, setShowFeedback] = useState(false)
   const [feedbackVideo, setFeedbackVideo] = useState<string | null>(null)
   const [videosWatched, setVideosWatched] = useState(0)
+  const [watchedVideos, setWatchedVideos] = useState<string[]>([])
+  const [feedbackCount, setFeedbackCount] = useState(0)
 
-  // Handle feedback requirement (every 10 videos)
+  // Handle feedback requirement (every 5 videos)
   useEffect(() => {
-    if (videosWatched > 0 && videosWatched % 10 === 0) {
+    if (videosWatched > 0 && videosWatched % 5 === 0) {
       setShowFeedback(true)
     }
   }, [videosWatched])
@@ -30,14 +32,23 @@ export default function Home() {
   const handleVideoWatched = (videoId: string) => {
     setVideosWatched(prev => prev + 1)
     
-    // Set the video for feedback if this is the 10th video
-    if ((videosWatched + 1) % 10 === 0) {
-      setFeedbackVideo(videoId)
+    // Keep track of watched videos (last 5)
+    setWatchedVideos(prev => {
+      const updated = [...prev, videoId]
+      return updated.slice(-5) // Keep only last 5 videos
+    })
+    
+    // Set a random video from the last 5 for feedback if this is the 5th video
+    if ((videosWatched + 1) % 5 === 0) {
+      const recentVideos = [...watchedVideos, videoId].slice(-5)
+      const randomVideo = recentVideos[Math.floor(Math.random() * recentVideos.length)]
+      setFeedbackVideo(randomVideo)
     }
   }
 
   const handleFeedbackSubmit = (feedbackData: any) => {
     console.log('Feedback submitted:', feedbackData)
+    setFeedbackCount(prev => prev + 1)
     setShowFeedback(false)
     setFeedbackVideo(null)
   }
@@ -100,11 +111,11 @@ export default function Home() {
               <div className="w-20 bg-gray-700 rounded-full h-1">
                 <div 
                   className="bg-gradient-to-r from-purple-500 to-pink-500 h-1 rounded-full transition-all duration-300"
-                  style={{ width: `${(videosWatched % 10) * 10}%` }}
+                  style={{ width: `${(videosWatched % 5) * 20}%` }}
                 />
               </div>
               <span className="text-xs text-gray-300">
-                {10 - (videosWatched % 10)} to feedback
+                {5 - (videosWatched % 5)} to feedback
               </span>
             </div>
           </div>

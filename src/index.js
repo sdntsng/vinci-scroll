@@ -200,12 +200,15 @@ app.get('/api/videos', async (req, res) => {
       }
     ];
     
+    const offsetNum = parseInt(offset) || 0;
+    const limitNum = parseInt(limit) || 10;
+    
     res.json({
       success: true,
-      videos: mockVideos.slice(parseInt(offset), parseInt(offset) + parseInt(limit)),
+      videos: mockVideos.slice(offsetNum, offsetNum + limitNum),
       pagination: {
-        limit: parseInt(limit),
-        offset: parseInt(offset),
+        limit: limitNum,
+        offset: offsetNum,
         hasMore: false
       },
       fallback: true,
@@ -316,14 +319,23 @@ app.get('/api/feedback/required', (req, res) => {
 
 app.post('/api/feedback', async (req, res) => {
   try {
-    const feedbackData = req.body;
+    const { videoId, whatDidYouSee, whyDidYouReact, timestamp } = req.body;
     
-    if (!feedbackData.user_id) {
+    if (!whatDidYouSee || !whyDidYouReact) {
       return res.status(400).json({
         success: false,
-        message: 'user_id is required'
+        message: 'Both questions must be answered'
       });
     }
+    
+    // Prepare feedback data for database
+    const feedbackData = {
+      video_id: videoId,
+      user_id: 'anonymous-user', // For MVP, all feedback is anonymous
+      what_did_you_see: whatDidYouSee,
+      why_did_you_react: whyDidYouReact,
+      created_at: timestamp || new Date().toISOString()
+    };
     
     // Submit feedback to Supabase
     const feedback = await supabaseService.submitFeedback(feedbackData);

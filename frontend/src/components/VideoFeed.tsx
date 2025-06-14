@@ -104,6 +104,9 @@ export function VideoFeed({ onVideoWatched }: VideoFeedProps) {
       } else {
         console.warn('Failed to record reaction:', result.message)
       }
+      
+      // Mark video as watched when user reacts (swipe or emoji)
+      onVideoWatched(videoId)
     } catch (error) {
       console.error('Error recording reaction:', error)
       // Don't show error to user for interactions - fail silently
