@@ -1,0 +1,52 @@
+{
+  "name": "scrollnet",
+  "version": "1.0.0",
+  "description": "ScrollNet - Gamified Video Feedback and Evaluation Platform integrating gaming and AI technologies",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "eslint src/**/*.js",
+    "format": "prettier --write src/**/*.js",
+    "setup": "npm install && echo 'Please configure your .env file with API keys'"
+  },
+  "keywords": [
+    "ai",
+    "gaming",
+    "video",
+    "feedback",
+    "reinforcement-learning",
+    "inworld",
+    "mistral",
+    "vision-ai",
+    "gamification",
+    "content-evaluation"
+  ],
+  "author": "ScrollNet Team",
+  "license": "ISC",
+  "type": "commonjs",
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  },
+  "dependencies": {
+    "@inworld/nodejs-sdk": "^1.0.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1",
+    "eslint": "^8.50.0",
+    "prettier": "^3.0.3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/scrollnet/scrollnet.git"
+  },
+  "bugs": {
+    "url": "https://github.com/scrollnet/scrollnet/issues"
+  },
+  "homepage": "https://github.com/scrollnet/scrollnet#readme"
+}

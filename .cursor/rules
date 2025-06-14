@@ -1,0 +1,51 @@
+# ScrollNet Development Rules
+
+## Project Overview
+ScrollNet is a gamified video feedback and evaluation platform that integrates AI and gaming technologies for content optimization.
+
+## Code Style and Standards
+- Use ES6+ syntax with async/await for asynchronous operations
+- Follow camelCase for variables and functions
+- Use PascalCase for classes and constructors
+- Add comprehensive error handling with try-catch blocks
+- Include JSDoc comments for all functions and classes
+- Use meaningful variable and function names
+
+## File Structure Guidelines
+- Keep API integrations in separate files (inworld.js, mistral.js)
+- Separate business logic into focused modules
+- Use /src directory for all source code
+- Store configuration in .env file
+- Keep tests in /tests directory
+
+## AI Integration Standards
+- Always handle API failures gracefully
+- Implement rate limiting for API calls
+- Use environment variables for API keys and secrets
+- Add logging for all AI model interactions
+- Implement retry logic for network requests
+
+## Security Best Practices
+- Never commit API keys or secrets to version control
+- Use .env files for sensitive configuration
+- Validate all user inputs
+- Implement proper authentication and authorization
+- Use HTTPS for all external API calls
+
+## Testing Requirements
+- Write unit tests for all core functions
+- Mock external API calls in tests
+- Test error handling scenarios
+- Include integration tests for AI workflows
+
+## Documentation Standards
+- Update README.md with setup instructions
+- Document all API endpoints and responses
+- Include examples for common use cases
+- Maintain changelog for version updates
+
+## Git Workflow
+- Use feature branches for new functionality
+- Write descriptive commit messages
+- Include issue references in commits
+- Review code before merging to main branch 
