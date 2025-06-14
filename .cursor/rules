@@ -51,7 +51,7 @@ ScrollNet is a gamified video feedback and evaluation platform that integrates A
 - Review code before merging to main branch
 
 ## Documentation & Clarity Maintenance
-- **UPDATE ALL DOCUMENTATION** at every development step
+- **UPDATE ALL DOCUMENTATION** at every development step, especially .cursor/rules & .cursor/docs.md
 - Maintain PROJECT_PLAN.md with current phase status and progress
 - Update README.md immediately when adding new features or setup requirements
 - Keep .cursor/docs.md current with any architecture changes

@@ -11,6 +11,8 @@ interface Video {
   duration: number
   tags: string[]
   thumbnail?: string
+  uploader?: string
+  createdAt?: string
 }
 
 interface VideoFeedProps {
@@ -22,150 +24,138 @@ export function VideoFeed({ onVideoWatched }: VideoFeedProps) {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
 
-  // Mock video data for MVP
-  const mockVideos: Video[] = [
-    {
-      id: 'video-1',
-      title: 'Product Demo Video',
-      description: 'A demonstration of our latest product features',
-      url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
-      duration: 596,
-      tags: ['demo', 'product'],
-      thumbnail: 'https://via.placeholder.com/640x360/6366f1/ffffff?text=Video+1'
-    },
-    {
-      id: 'video-2',
-      title: 'Tutorial: Getting Started',
-      description: 'Learn the basics with this comprehensive tutorial',
-      url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
-      duration: 653,
-      tags: ['tutorial', 'beginners'],
-      thumbnail: 'https://via.placeholder.com/640x360/8b5cf6/ffffff?text=Video+2'
-    },
-    {
-      id: 'video-3',
-      title: 'Advanced Features Overview',
-      description: 'Explore advanced features and capabilities',
-      url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
-      duration: 15,
-      tags: ['advanced', 'features'],
-      thumbnail: 'https://via.placeholder.com/640x360/ec4899/ffffff?text=Video+3'
-    },
-    {
-      id: 'video-4',
-      title: 'Customer Success Story',
-      description: 'See how our customers achieve success',
-      url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4',
-      duration: 15,
-      tags: ['customer', 'success'],
-      thumbnail: 'https://via.placeholder.com/640x360/f59e0b/ffffff?text=Video+4'
-    },
-    {
-      id: 'video-5',
-      title: 'Behind the Scenes',
-      description: 'A look behind the scenes of our development process',
-      url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4',
-      duration: 15,
-      tags: ['behind-scenes', 'development'],
-      thumbnail: 'https://via.placeholder.com/640x360/10b981/ffffff?text=Video+5'
-    }
-  ]
-
   useEffect(() => {
-    // Simulate API call to fetch videos
-    const fetchVideos = async () => {
-      setIsLoading(true)
-      try {
-        // TODO: Replace with actual API call
-        const response = await fetch('http://localhost:3001/api/videos/feed')
-        
-        if (response.ok) {
-          const data = await response.json()
-          setVideos(data.videos || mockVideos)
-        } else {
-          // Use mock data for MVP
-          setVideos(mockVideos)
-        }
-      } catch (err) {
-        // Use mock data for MVP
-        setVideos(mockVideos)
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
     fetchVideos()
   }, [])
 
+  const fetchVideos = async () => {
+    try {
+      setIsLoading(true)
+      setError('')
+      
+      const response = await fetch('http://localhost:3001/api/videos?limit=20')
+      const data = await response.json()
+      
+      if (data.success) {
+        setVideos(data.videos)
+        
+        if (data.fallback) {
+          console.log('Using fallback data:', data.message)
+        }
+      } else {
+        throw new Error(data.message || 'Failed to fetch videos')
+      }
+    } catch (error) {
+      console.error('Error fetching videos:', error)
+      setError('Failed to load videos. Please try again.')
+      
+      // Fallback to local mock data if API fails
+      const fallbackVideos: Video[] = [
+        {
+          id: 'fallback-1',
+          title: 'Welcome to ScrollNet',
+          description: 'Get started with our mobile-first video platform',
+          url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+          duration: 596,
+          tags: ['welcome', 'intro'],
+          uploader: 'ScrollNet Team'
+        },
+        {
+          id: 'fallback-2',
+          title: 'Swipe Tutorial',
+          description: 'Learn how to navigate with swipe gestures',
+          url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
+          duration: 653,
+          tags: ['tutorial', 'gestures'],
+          uploader: 'Tutorial Team'
+        }
+      ]
+      setVideos(fallbackVideos)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   const handleVideoReaction = async (videoId: string, reaction: 'like' | 'dislike' | 'emoji', data?: any) => {
     try {
-      // Send reaction to backend
-      await fetch(`http://localhost:3001/api/interactions/${videoId}/react`, {
+      // Get user ID from localStorage (MVP approach)
+      const userData = localStorage.getItem('user')
+      const userId = userData ? JSON.parse(userData).id : 'anonymous-user'
+      
+      const response = await fetch('http://localhost:3001/api/interactions', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          reaction,
-          data,
-          timestamp: new Date().toISOString()
-        }),
+          userId,
+          videoId,
+          type: reaction,
+          data: data || {}
+        })
       })
       
-      // Track that user watched/interacted with video
-      onVideoWatched(videoId)
+      const result = await response.json()
       
-      console.log(`Video ${videoId} reaction:`, { reaction, data })
+      if (result.success) {
+        console.log('Reaction recorded:', reaction, data)
+      } else {
+        console.warn('Failed to record reaction:', result.message)
+      }
     } catch (error) {
-      // For MVP, still track the video as watched
-      onVideoWatched(videoId)
-      console.log('Reaction saved locally (MVP mode):', { videoId, reaction, data })
+      console.error('Error recording reaction:', error)
+      // Don't show error to user for interactions - fail silently
     }
   }
 
   const handleNextVideo = () => {
-    // This is called when user reaches the end of videos
-    console.log('All videos completed!')
+    // This will be handled by the SwipeVideoPlayer internally
+    // We could add analytics here if needed
+    console.log('Next video requested')
   }
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-screen bg-gray-900">
+      <div className="flex items-center justify-center h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500 mx-auto mb-4"></div>
-          <p className="text-white">Loading videos...</p>
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-white mx-auto mb-4"></div>
+          <p className="text-white text-lg">Loading videos...</p>
         </div>
       </div>
     )
   }
 
-  if (error) {
+  if (error && videos.length === 0) {
     return (
-      <div className="flex items-center justify-center h-screen bg-gray-900">
-        <div className="bg-red-900/20 border border-red-800 rounded-lg p-6 text-red-300 max-w-md">
-          <h3 className="font-medium mb-2">Error loading videos</h3>
-          <p className="text-sm">{error}</p>
-        </div>
-      </div>
-    )
-  }
-
-  if (videos.length === 0) {
-    return (
-      <div className="flex items-center justify-center h-screen bg-gray-900">
-        <div className="text-center text-white">
-          <h3 className="text-xl font-medium mb-2">No videos available</h3>
-          <p className="text-gray-400">Check back later for new content!</p>
+      <div className="flex items-center justify-center h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
+        <div className="text-center px-6">
+          <div className="text-red-400 text-6xl mb-4">⚠️</div>
+          <h2 className="text-white text-xl font-bold mb-2">Connection Error</h2>
+          <p className="text-gray-300 mb-6">{error}</p>
+          <button
+            onClick={fetchVideos}
+            className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+          >
+            Try Again
+          </button>
         </div>
       </div>
     )
   }
 
   return (
-    <SwipeVideoPlayer
-      videos={videos}
-      onVideoReaction={handleVideoReaction}
-      onNextVideo={handleNextVideo}
-    />
+    <div className="h-screen bg-black">
+      {error && (
+        <div className="absolute top-4 left-4 right-4 z-50 bg-yellow-600 text-white px-4 py-2 rounded-lg text-sm">
+          ⚠️ Using offline mode - {error}
+        </div>
+      )}
+      
+      <SwipeVideoPlayer
+        videos={videos}
+        onVideoReaction={handleVideoReaction}
+        onNextVideo={handleNextVideo}
+      />
+    </div>
   )
 } 
